@@ -1423,56 +1423,59 @@
     // 🌟 UPGRADED: Now handles both new reports and archived reports!
   // 🌟 UPGRADED: Generates PDF on frontend and sends Base64 to Python
     async function sendReportToEmail(reportToSend = currentResults, buttonElement = null) {
-        if (!reportToSend) {
-            alert("⚠️ No report found! Please generate or select a report first.");
-            return;
-        }
-
-        const btn = buttonElement || document.getElementById('emailReportBtn');
-        if (!btn) return;
-
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Preparing PDF...';
-        btn.disabled = true;
-
-        try {
-            // 1. GENERATE THE PDF DOC USING YOUR MASTER BUILDER
-            const isArchive = !!reportToSend.timestamp; 
-            const doc = buildMasterPDF(reportToSend, isArchive, reportToSend);
-
-            // 2. CONVERT THE DOC TO A BASE64 STRING
-            const pdfBase64 = doc.output('datauristring').split(',')[1];
-
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending Email...';
-
-            // 3. SEND THE PDF TO PYTHON
-            const response = await fetch('https://career-backend-2-xsdj.onrender.com/send-report', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    username: currentUser,
-                    pdf_file: pdfBase64,
-                    filename: `${currentUser.replace(/\s+/g, '_')}_Placement_Report.pdf`,
-                    report: reportToSend
-                })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                alert("✅ " + data.message);
-            } else {
-                alert("❌ Failed to send: " + (data.error || "Server error"));
-            }
-        } catch (error) {
-            console.error("Email Error:", error);
-            alert("❌ An error occurred while generating or sending the PDF.");
-        } finally {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        }
+    if (!reportToSend) {
+        alert("⚠️ No report found! Please generate or select a report first.");
+        return;
     }
 
+    // 1. Ask the user where they want to send the email!
+    const targetEmail = prompt("Enter the email address to receive this report:");
+    if (!targetEmail) return; // Stop if they click cancel or leave it blank
+
+    const btn = buttonElement || document.getElementById('emailReportBtn');
+    if (!btn) return;
+
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Preparing PDF...';
+    btn.disabled = true;
+
+    try {
+        // 2. GENERATE THE PDF DOC USING YOUR MASTER BUILDER
+        const isArchive = !!reportToSend.timestamp; 
+        const doc = buildMasterPDF(reportToSend, isArchive, reportToSend);
+
+        // 3. CONVERT THE DOC TO A BASE64 STRING
+        // Let Python handle the splitting to be safe!
+        const pdfBase64 = doc.output('datauristring');
+
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending Email...';
+
+        // 4. SEND THE EXACT DATA PYTHON IS EXPECTING!
+        const response = await fetch('https://career-backend-2-xsdj.onrender.com/send-report', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                name: currentUser,         // Changed from 'username'
+                email: targetEmail,        // NEW: Added the email address
+                pdf_data: pdfBase64        // Changed from 'pdf_file'
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert("✅ " + data.message);
+        } else {
+            alert("❌ Failed to send: " + (data.error || "Server error"));
+        }
+    } catch (error) {
+        console.error("Email Error:", error);
+        alert("❌ An error occurred while generating or sending the PDF.");
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
     // --- EVENT LISTENERS ---
     document.getElementById('profile').addEventListener('keypress', function(event) {
         if (event.key === 'Enter') {
