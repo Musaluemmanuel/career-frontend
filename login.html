@@ -11,18 +11,19 @@
     <style>
         body { font-family: 'Inter', sans-serif; background: #f4f6f9; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
         .auth-card { background: white; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; padding: 2.5rem; }
-    </style><link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#1e293b">
-<link rel="apple-touch-icon" href="icon-192.png">
-
+    </style>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e293b">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
     <div class="auth-card text-center">
-        <div class="mb-4">
+        <div id="authHeader" class="mb-4">
             <div class="text-primary mb-3"><i class="fas fa-user-graduate fa-3x"></i></div>
             <h3 class="fw-bold text-dark" id="authTitle">Student Portal</h3>
-            <p class="text-muted small">Sign in to your AI Career Dashboard</p>
+            <p class="text-muted small" id="authSubtitle">Sign in to your AI Career Dashboard</p>
         </div>
 
         <form id="authForm" onsubmit="handleAuth(event)">
@@ -58,11 +59,56 @@
                 Sign In
             </button>
         </form>
+</form>
 
-        <p class="mt-4 text-muted small text-center mb-0">
+        <div class="text-center mt-3 mb-2">
+            <div id="g_id_onload"
+                 data-client_id="55276360637-aijk41qg09i78s3inr24bsnai1k1huqu.apps.googleusercontent.com"
+                 data-context="signin"
+                 data-ux_mode="popup"
+                 data-callback="handleCredentialResponse"
+                 data-auto_prompt="false">
+            </div>
+            <div class="g_id_signin d-flex justify-content-center"
+                 data-type="standard"
+                 data-shape="rectangular"
+                 data-theme="outline"
+                 data-text="signin_with"
+                 data-size="large"
+                 data-logo_alignment="left">
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center mb-3">
+            <hr class="flex-grow-1">
+            <span class="mx-2 text-muted small">or</span>
+            <hr class="flex-grow-1">
+        </div>
+        <p id="authToggleContainer" class="mt-4 text-muted small text-center mb-0">
+
+        <p id="authToggleContainer" class="mt-4 text-muted small text-center mb-0">
             <span id="authToggleText">New student?</span>
             <a href="#" class="text-primary fw-bold text-decoration-none" id="authToggleLink" onclick="toggleAuthMode(event)">Register here</a>
         </p>
+
+        <div id="verification-section" style="display: none; text-align: center;">
+            <div class="text-success mb-3"><i class="fas fa-envelope-open-text fa-3x"></i></div>
+            <h4 class="fw-bold">Verify Your Account</h4>
+            <p class="text-muted small mb-4">We just sent a 6-digit code to your email. Enter it below to activate your account.</p>
+            
+            <input type="text" id="verify-code" class="form-control mb-3" placeholder="------" maxlength="6" style="font-size: 24px; letter-spacing: 8px; text-align: center; font-weight: bold;">
+            
+            <button id="verifyBtn" onclick="verifyAccount()" class="btn btn-success w-100 fw-bold py-3 rounded-3 shadow-sm">
+                Verify Account
+            </button>
+            
+            <p id="verify-message" class="text-danger small fw-bold mt-3"></p>
+            
+            <p class="mt-3 text-muted small">
+                Didn't receive the code? <br>
+                <a href="#" onclick="resendCode(event)" id="resend-link" class="text-primary fw-bold text-decoration-none mt-1 d-inline-block">Resend Code</a>
+            </p>
+        </div>
     </div>
 
     <div class="modal fade" id="forgotPasswordModal" tabindex="-1">
@@ -83,32 +129,63 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        const API_URL = "https://career-backend-504u.onrender.com"; 
+        const API_URL = "http://127.0.0.1:5001"; 
         let isLoginMode = true;
+        let pendingVerificationEmail = ""; 
 
-        window.onload = () => {
-            if (localStorage.getItem('user_name')) window.location.href = "index.html";
-        };
+        // ==========================================
+        // ✨ MAGIC LINK / AUTO-VERIFY LOGIC ✨
+        // ==========================================
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const magicCode = urlParams.get('code');
+            const urlEmail = urlParams.get('email'); // Grabs email from URL if present
 
+            // 1. CHECK FOR MAGIC LINK FIRST
+            if (magicCode && urlEmail) {
+                console.log("Magic Link detected for:", urlEmail);
+                
+                // Restore email to memory
+                pendingVerificationEmail = urlEmail;
+                localStorage.setItem('pendingVerificationEmail', urlEmail);
+
+                // Hide Auth Forms, Show Verification
+                document.getElementById('authHeader').style.display = 'none';
+                document.getElementById('authForm').style.display = 'none';
+                document.getElementById('authToggleContainer').style.display = 'none';
+                document.getElementById('verification-section').style.display = 'block';
+
+                // Auto-fill Code
+                document.getElementById('verify-code').value = magicCode;
+                
+                // Trigger backend verify immediately
+                verifyAccount();
+
+                // Clean URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            } 
+            // 2. ONLY REDIRECT IF THERE IS NO MAGIC LINK
+            else if (localStorage.getItem('user_name')) {
+                window.location.href = "index.html";
+            }
+        });
         function toggleAuthMode(event) {
             if (event) event.preventDefault();
             isLoginMode = !isLoginMode;
             
             document.getElementById('authTitle').innerText = isLoginMode ? "Student Portal" : "Create Account";
+            document.getElementById('authSubtitle').innerText = isLoginMode ? "Sign in to your AI Career Dashboard" : "Join the AI Career platform";
             
-            // Toggle Fields
             document.getElementById('confirmPasswordDiv').style.display = isLoginMode ? "none" : "block";
             document.getElementById('emailDiv').style.display = isLoginMode ? "none" : "block";
             document.getElementById('forgotPasswordDiv').style.display = isLoginMode ? "block" : "none";
             
-            // Update Requirements
             document.getElementById('loginConfirmPassword').required = !isLoginMode;
             document.getElementById('loginEmail').required = !isLoginMode;
             
-            // Update Text
             document.getElementById('authBtn').innerText = isLoginMode ? "Sign In" : "Register";
             document.getElementById('authToggleText').innerText = isLoginMode ? "New student?" : "Already have an account?";
-            document.getElementById('authToggleLink').innerText = isLoginMode ? "Login here" : "Register here";
+            document.getElementById('authToggleLink').innerText = isLoginMode ? "Register here" : "Sign In here";
             document.getElementById('loginMessage').innerText = "";
         }
 
@@ -142,10 +219,9 @@
             msg.innerText = "Connecting to server...";
 
             const endpoint = isLoginMode ? "/login" : "/register";
-            const payload = isLoginMode ? { username: user, password: pass } : { username: user, password: pass, email: email };
-
+            const payload = isLoginMode ? { email: user, password: pass } : { name: user, password: pass, email: email };
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            const timeoutId = setTimeout(() => controller.abort(), 8000); 
 
             try {
                 const response = await fetch(`${API_URL}${endpoint}`, {
@@ -159,10 +235,22 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    msg.className = "text-success small fw-bold mt-2";
-                    msg.innerText = "Success! Redirecting...";
-                    localStorage.setItem('user_name', user); 
-                    setTimeout(() => { window.location.href = "index.html"; }, 500);
+                    if (isLoginMode) {
+                        // LOGIN SUCCESS
+                        msg.className = "text-success small fw-bold mt-2";
+                        msg.innerText = "Success! Redirecting...";
+                        localStorage.setItem('user_name', data.user.name); // Using verified name from backend
+                        setTimeout(() => { window.location.href = "index.html"; }, 500);
+                    } else {
+                        // REGISTRATION SUCCESS -> SHOW VERIFICATION
+                        pendingVerificationEmail = email; 
+                        localStorage.setItem('pendingVerificationEmail', email); // Save in memory for new tabs
+                        
+                        document.getElementById('authHeader').style.display = 'none';
+                        document.getElementById('authForm').style.display = 'none';
+                        document.getElementById('authToggleContainer').style.display = 'none';
+                        document.getElementById('verification-section').style.display = 'block';
+                    }
                 } else {
                     msg.className = "text-danger small fw-bold mt-2";
                     msg.innerText = data.message || "Authentication failed.";
@@ -170,13 +258,103 @@
             } catch (error) {
                 msg.className = "text-danger small fw-bold mt-2";
                 if (error.name === 'AbortError') {
-                    msg.innerText = "Server took too long (5s). Is your Python terminal paused?";
+                    msg.innerText = "Server took too long. Is your Python terminal running?";
                 } else {
                     msg.innerText = "Cannot reach Python server. Is app.py running?";
                 }
             } finally {
                 btn.disabled = false;
                 if(msg.innerText !== "Success! Redirecting...") btn.innerText = originalBtnText;
+            }
+        }
+
+        async function verifyAccount() {
+            const code = document.getElementById('verify-code').value.trim();
+            const messageEl = document.getElementById('verify-message');
+
+            // Fallback just in case they lose the email variable
+            if (!pendingVerificationEmail) {
+                pendingVerificationEmail = localStorage.getItem('pendingVerificationEmail');
+            }
+
+            if (!pendingVerificationEmail) {
+                messageEl.className = "text-danger small fw-bold mt-3";
+                messageEl.textContent = "Error: Email session lost. Please sign in to request a new code.";
+                return;
+            }
+
+            if (code.length !== 6) {
+                messageEl.className = "text-danger small fw-bold mt-3";
+                messageEl.textContent = "Please enter the full 6-digit code.";
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/verify`, { 
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: pendingVerificationEmail, code: code })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    messageEl.className = "text-success small fw-bold mt-3";
+                    messageEl.textContent = "Account verified! Logging you in...";
+                    
+                    // --- AUTO-LOGIN TRIGGER ---
+                    localStorage.setItem('user_name', data.user.name); 
+                    localStorage.removeItem('pendingVerificationEmail'); // Clean up memory
+
+                    setTimeout(() => {
+                        window.location.href = "index.html"; 
+                    }, 1500);
+                } else {
+                    messageEl.className = "text-danger small fw-bold mt-3";
+                    messageEl.textContent = data.message || "Invalid code. Try again.";
+                }
+            } catch (error) {
+                messageEl.className = "text-danger small fw-bold mt-3";
+                messageEl.textContent = "Server error. Please try again.";
+            }
+        }
+
+        async function resendCode(event) {
+            event.preventDefault();
+            const messageEl = document.getElementById('verify-message');
+            const resendLink = document.getElementById('resend-link');
+            
+            if (!pendingVerificationEmail) pendingVerificationEmail = localStorage.getItem('pendingVerificationEmail');
+
+            resendLink.style.pointerEvents = "none";
+            resendLink.style.color = "grey";
+            resendLink.textContent = "Sending...";
+
+            try {
+                const response = await fetch(`${API_URL}/resend-code`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: pendingVerificationEmail })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    messageEl.className = "text-success small fw-bold mt-3";
+                    messageEl.textContent = "A fresh code has been sent to your email!";
+                } else {
+                    messageEl.className = "text-danger small fw-bold mt-3";
+                    messageEl.textContent = data.message || "Failed to resend code.";
+                }
+            } catch (error) {
+                messageEl.className = "text-danger small fw-bold mt-3";
+                messageEl.textContent = "Server error. Please try again.";
+            } finally {
+                setTimeout(() => {
+                    resendLink.style.pointerEvents = "auto";
+                    resendLink.style.color = "#0d6efd";
+                    resendLink.textContent = "Resend Code";
+                }, 5000);
             }
         }
 
@@ -205,19 +383,44 @@
                 btn.innerText = "Send Temporary Password";
                 emailInput.value = "";
             }
-        }    // --- PWA SERVICE WORKER REGISTRATION ---
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-            .then(registration => {
-                console.log('✅ Service Worker registered successfully with scope:', registration.scope);
-            })
-            .catch(error => {
-                console.error('❌ Service Worker registration failed:', error);
-            });
-    });
-}
-    </script>
+        }
 
+        // --- PWA SERVICE WORKER REGISTRATION ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => console.log('✅ Service Worker registered'))
+                    .catch(error => console.error('❌ Service Worker registration failed:', error));
+            });
+        }// ==========================================
+        // ✨ GOOGLE SIGN-IN LOGIC ✨
+        // ==========================================
+        async function handleCredentialResponse(response) {
+            const googleToken = response.credential;
+            const btn = document.querySelector('.g_id_signin'); // Optional: Add loading state
+            
+            try {
+                const res = await fetch(`${API_URL}/google-login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: googleToken })
+                });
+
+                const data = await res.json();
+                
+                if (res.ok) {
+                    // Save user data (matching your existing auth flow)
+                    localStorage.setItem('user_name', data.name);
+                    localStorage.setItem('user_email', data.email);
+                    window.location.href = "index.html"; 
+                } else {
+                    document.getElementById('loginMessage').innerText = "Google login failed: " + data.message;
+                }
+            } catch (err) {
+                console.error("Error connecting to server:", err);
+                document.getElementById('loginMessage').innerText = "Could not connect to the server.";
+            }
+        }
+    </script>
 </body>
 </html>

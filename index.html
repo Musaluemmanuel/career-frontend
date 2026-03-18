@@ -8,7 +8,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-    
+    <link rel="manifest" href="/manifest.json">
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wordcloud2.js/1.2.2/wordcloud2.min.js"></script>
@@ -218,6 +219,7 @@
             <div id="profileFormContainer">
                 <h2 class="fw-bold mb-2 text-dark">Welcome, <span id="welcomeName" class="text-primary"></span>! 👋</h2>
                 <p class="text-secondary mb-4 fs-5">Student Profile Setup</p>
+
                 
                 <div class="card p-4 border-0 shadow-sm mb-4 rounded-4">
                     <div class="mb-4">
@@ -307,15 +309,22 @@
                 </div>
             </div>
         </div>
-
         <div id="audit" class="content-section">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="fw-bold text-dark">AI Intelligence Report</h2>
-                <button onclick="downloadPDF()" class="btn btn-dark shadow-sm px-4 rounded-3 fw-bold" id="savePdfBtn" style="display: none;">
-                    <i class="fas fa-file-pdf text-danger me-2"></i> Save PDF
-                </button>
+                
+                <h2 class="fw-bold text-dark mb-0">AI Intelligence Report</h2>
+                
+                <div class="d-flex gap-2">
+                    <button id="emailReportBtn" class="btn btn-outline-info shadow-sm fw-bold" onclick="sendReportToEmail()" style="display: none;">
+                        <i class="fas fa-paper-plane me-2"></i>Email Report
+                    </button>
+                    
+                    <button onclick="downloadPDF()" class="btn btn-dark shadow-sm px-4 rounded-3 fw-bold" id="savePdfBtn" style="display: none;">
+                        <i class="fas fa-file-pdf text-danger me-2"></i> Save PDF
+                    </button>
+                </div>
+                
             </div>
-            
             <div id="auditEmptyState" class="text-center py-5 mt-5">
                 <i class="fas fa-chart-pie fa-4x text-muted mb-3 opacity-50"></i>
                 <h4 class="fw-bold text-secondary">No Active Analysis</h4>
@@ -472,6 +481,7 @@
                     <button type="button" class="btn btn-dark btn-sm me-3 shadow-sm px-3 rounded-3" onclick="downloadSavedPDF()">
                         <i class="fas fa-file-pdf text-danger me-1"></i> Download PDF
                     </button>
+                    
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
             </div>
@@ -488,12 +498,12 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const API_URL = "https://career-backend-504u.onrender.com";
+    const API_URL = "http://127.0.0.1:5001";
     let currentUser = "";
     let currentResults = null;
     let globalReports = []; 
     let currentViewedReport = null;
-
+    
     const subjectsList = [
         "Math", "English", "Kiswahili", "Biology", "Physics", 
         "Chemistry", "History", "CRE", "Geography", "Business", 
@@ -785,59 +795,23 @@
             }).catch(err => console.error("Badge sync failed", err));
     }
 
-    // --- MAIN REPORT FETCH LOGIC ---
-    async function getRecommendations() {
-        const interest = document.getElementById('interestArea').value.trim();
-        const meanGrade = document.getElementById('meanGradeLetter').value;
-        const points = document.getElementById('aggregatePoints').value;
-        const selects = document.querySelectorAll('.grade-select');
-        
-        let count = 0; 
-        const subjects = {};
-        selects.forEach(s => { 
-            if (s.value) { 
-                count++; 
-                subjects[s.id.replace('grade-', '')] = s.value; 
-            } 
-        });
-
-        if (count !== 7) return alert("Please save a complete profile first!");
-
-        // Switch to the audit tab
-        showSection('audit');
-        
-        document.getElementById('savePdfBtn').style.display = 'none';
-        document.getElementById('resultsContainer').style.display = 'none'; 
-        document.getElementById('auditEmptyState').style.display = 'none';
-        
-        const loader = document.getElementById('aiLoader');
-        loader.style.display = 'block';
-
+    
+    // --- NEW BACKGROUND SAVE FUNCTION ---
+    async function saveReportToHistory(reportData) {
         try {
-            const response = await fetch(`${API_URL}/recommend`, {
+            await fetch(`${API_URL}/save-history`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ studentName: currentUser, interestArea: interest, meanGrade: meanGrade, aggregatePoints: parseInt(points), subjects: subjects })
+                body: JSON.stringify({
+                    username: currentUser,
+                    report: reportData
+                })
             });
-            
-            const data = await response.json();
-            currentResults = data;
-
-            renderDashboard(data);
-            
-            loader.style.display = 'none';
-            document.getElementById('resultsContainer').style.display = 'block';
-            document.getElementById('savePdfBtn').style.display = 'inline-block';
-            
-            updateSidebarBadgeOnly();
-        } catch (error) {
-            console.error("Fetch Error:", error);
-            loader.style.display = 'none';
-            document.getElementById('auditEmptyState').style.display = 'block';
-            alert("AI Server Error. Ensure your Python backend is running.");
+            updateSidebarBadgeOnly(); // Updates the notification number instantly!
+        } catch (err) {
+            console.error("Failed to save background history", err);
         }
     }
-
     function renderDashboard(data) {
         let careerUrl = data.career_exploration_url;
         if (!careerUrl || !careerUrl.startsWith('http')) {
@@ -977,10 +951,13 @@
                                 <thead class="text-muted border-bottom"><tr><th>Subject</th><th>Required</th><th>Yours</th></tr></thead>
                                 <tbody>`;
                     
-                    uni.requirements_met.forEach(req => { 
-                        reqHtml += `<tr><td class="py-1">${req.subject}</td><td class="py-1"><span class="badge bg-secondary">${req.required}</span></td><td class="py-1"><span class="fw-bold text-success">${req.attained}</span></td></tr>`; 
-                    });
-                    
+                   uni.requirements_met.forEach(req => { 
+    reqHtml += `<tr>
+        <td class="py-1">${req.subject}</td>
+        <td class="py-1"><span class="badge bg-secondary">${req.required}</span></td>
+        <td class="py-1"><span class="fw-bold text-success"><i class="fas fa-check"></i> Met</span></td>
+    </tr>`; 
+});
                     reqHtml += `</tbody></table></div>`;
                 }
 
@@ -1031,9 +1008,74 @@
                         </div>
                     </div>`;
             });
+        } 
+    }
+// --- MAIN AI RECOMMENDATION LOGIC ---
+    async function getRecommendations() {
+        // 1. Get the profile data
+        const savedProfile = localStorage.getItem(`${currentUser}_saved_profile`);
+        if (!savedProfile) return alert("Please complete your profile setup first.");
+        const profileData = JSON.parse(savedProfile);
+        
+        const userData = {
+            name: currentUser,
+            interest: profileData.interest,
+            grades: profileData.subjects,
+            points: profileData.points
+        };
+
+        // 2. Prepare the UI
+        showSection('audit');
+        document.getElementById('auditEmptyState').style.display = 'none';
+        document.getElementById('resultsContainer').style.display = 'none';
+        document.getElementById('aiLoader').style.display = 'block';
+        document.getElementById('savePdfBtn').style.display = 'none';
+        document.getElementById('emailReportBtn').style.display = 'none';
+
+        document.getElementById('aiLoader').innerHTML = `
+            <div class="spinner-border text-primary mb-4" style="width: 3rem; height: 3rem;"></div>
+            <h2 class="fw-bold">Analyzing Your Career Path...</h2>
+            <p class="text-secondary">Matching grades with university requirements. Please wait...</p>
+        `;
+
+        try {
+            // 3. Call the Python backend
+            const response = await fetch(`${API_URL}/recommend`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userData)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Server error");
+            }
+
+            const data = await response.json();
+
+            // 4. Update the UI with results
+            document.getElementById('aiLoader').style.display = 'none';
+            document.getElementById('resultsContainer').style.display = 'block';
+            
+            currentResults = data; 
+            renderDashboard(data);
+            
+            document.getElementById('savePdfBtn').style.display = 'inline-block';
+            document.getElementById('emailReportBtn').style.display = 'inline-block';
+
+            // 5. 💾 THIS IS THE MAGIC LINE THAT SAVES THE REPORT!
+            saveReportToHistory(data);
+
+        } catch (error) {
+            console.error("Error generating report:", error);
+            document.getElementById('aiLoader').innerHTML = `
+                <div class="alert alert-danger mx-auto" style="max-width: 500px;">
+                    <h4 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Analysis Failed</h4>
+                    <p class="mb-0">Could not connect to the AI engine. Please ensure your Python server is running and try again.</p>
+                </div>
+            `;
         }
     }
-
     function refineRecommendations() { 
         const refinementText = document.getElementById('refinementInput').value.trim();
         if(!refinementText) return alert("Please enter some instructions!"); 
@@ -1218,29 +1260,44 @@
         }
     }
 
-    // --- PDF GENERATION ENGINE ---
+   // --- PDF GENERATION ENGINE (UNIFIED & OPTIMIZED) ---
 
-    // 1. PDF for the LIVE Audit tab
-    function buildPDFDocument(data) {
+    // 1. Master PDF Builder (Handles both LIVE and SAVED reports)
+    function buildMasterPDF(data, isSavedReport = false, archiveLog = null) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         const studentName = currentUser || "Student";
-        const meanGrade = document.getElementById('meanGradeLetter').value || "N/A";
-        const aggPoints = document.getElementById('aggregatePoints').value || "N/A";
 
+        // Determine dynamic text based on whether it's an archive or a live report
+        const dateText = isSavedReport && archiveLog?.timestamp 
+            ? `Archive Date: ${new Date(archiveLog.timestamp).toLocaleDateString()}` 
+            : `Generated: ${new Date().toLocaleDateString()}`;
+
+        let statsText = "";
+        if (isSavedReport) {
+            const points = archiveLog?.points || data.validated_points || "Retrieved from Archive";
+            statsText = `Aggregate Points: ${points}`;
+        } else {
+            const meanGrade = document.getElementById('meanGradeLetter')?.value || "N/A";
+            const aggPoints = document.getElementById('aggregatePoints')?.value || "N/A";
+            statsText = `Mean Grade: ${meanGrade} | Points: ${aggPoints}`;
+        }
+
+        // --- DRAW HEADER ---
         doc.setFillColor(79, 70, 229); 
         doc.rect(0, 0, 210, 40, 'F');
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(22);
         doc.text("KUCCPS Smart Placement Report", 14, 25);
         doc.setFontSize(10);
-        doc.text(`Generated: ${new Date().toLocaleDateString()}`, 150, 25);
+        doc.text(dateText, 150, 25);
 
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(12);
         doc.text(`Name: ${studentName}`, 14, 50);
-        doc.text(`Mean Grade: ${meanGrade} | Points: ${aggPoints}`, 14, 57);
+        doc.text(statsText, 14, 57);
 
+        // --- RECOMMENDATION HIGHLIGHT ---
         let currentY = 70; 
         doc.setFillColor(240, 245, 255);
         doc.rect(14, currentY, 182, 30, 'F');
@@ -1252,7 +1309,10 @@
         doc.text(`Target Role: ${data.ai_role}`, 18, currentY + 22);
         currentY += 40;
 
+        // --- INTEREST MATCH REASON ---
         if (data.interest_match_reason) {
+            // Safety check for page break
+            if (currentY > 270) { doc.addPage(); currentY = 20; }
             doc.setFontSize(11);
             doc.setTextColor(16, 185, 129); 
             doc.setFont("helvetica", "bold");
@@ -1267,11 +1327,15 @@
             currentY += 5;
         }
 
+        // --- ACTION PLAN (ROADMAP) ---
         if (data.ai_roadmap) {
+            if (currentY > 270) { doc.addPage(); currentY = 20; }
             doc.setFontSize(13);
             doc.setTextColor(0, 0, 0);
             doc.setFont("helvetica", "bold");
             doc.text("Your Action Plan:", 14, currentY);
+            
+            // Your exact regex cleanup
             let cleanRoadmap = data.ai_roadmap.replace(/<br\s*[\/]?>/gi, "\n").replace(/<li>/gi, "\n • ").replace(/<\/li>/gi, "").replace(/<[^>]*>?/gm, "").replace(/&nbsp;/g, " ").trim();
             doc.setFontSize(11);
             doc.setTextColor(60, 60, 60);
@@ -1281,7 +1345,9 @@
             currentY += 15 + (splitRoadmap.length * 5); 
         }
 
+        // --- UNIVERSITIES TABLE ---
         if (data.universities && data.universities.length > 0) {
+            if (currentY > 250) { doc.addPage(); currentY = 20; }
             doc.setFontSize(12);
             doc.setTextColor(0, 0, 0);
             doc.setFont("helvetica", "bold"); 
@@ -1291,108 +1357,50 @@
                 const reqSummary = u.requirements_met ? u.requirements_met.map(r => `${r.subject}: ${r.attained} (Req: ${r.required})`).join("\n") : "Standard Entry Met";
                 return [u.name, u.specific_course || u.course || u.course_name || "Recommended Degree", reqSummary, u.reason];
             });
-            doc.autoTable({ startY: currentY + 5, head: [['Institution', 'Verified Course', 'Requirement Check', 'Reason']], body: tableData, theme: 'grid', headStyles: { fillColor: [79, 70, 229] }, columnStyles: { 0: { cellWidth: 40 }, 2: { cellWidth: 40 } }, styles: { fontSize: 8, cellPadding: 3 } });
-        }
-        return doc;
-    }
-
-    function downloadPDF() {
-        if (!currentResults) { alert("Please run the analysis first!"); return; }
-        const doc = buildPDFDocument(currentResults);
-        const fileName = `${currentUser.replace(/\s+/g, '_')}_Placement_Report.pdf`;
-        doc.save(fileName);
-    }
-
-    // 2. PDF for the SAVED Reports Tab
-    function buildSavedPDFDocument(aiResults, fullLogItem) {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const studentName = currentUser || "Student";
-        const aggPoints = fullLogItem.points || aiResults.validated_points || "Retrieved from Archive";
-
-        doc.setFillColor(79, 70, 229); 
-        doc.rect(0, 0, 210, 40, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(22);
-        doc.text("KUCCPS Smart Placement Report", 14, 25);
-        doc.setFontSize(10);
-        
-        const dateText = fullLogItem.timestamp ? new Date(fullLogItem.timestamp).toLocaleDateString() : new Date().toLocaleDateString();
-        doc.text(`Archive Date: ${dateText}`, 150, 25);
-
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(12);
-        doc.text(`Name: ${studentName}`, 14, 50);
-        doc.text(`Aggregate Points: ${aggPoints}`, 14, 57);
-
-        let currentY = 70; 
-        doc.setFillColor(240, 245, 255);
-        doc.rect(14, currentY, 182, 30, 'F');
-        doc.setFontSize(14);
-        doc.setTextColor(0, 51, 102);
-        const mainPath = aiResults.specific_course || aiResults.course || aiResults.career_path || aiResults.ai_role;
-        doc.text(`Recommended Path: ${mainPath} (${aiResults.level || "Degree"})`, 18, currentY + 12);
-        doc.setFontSize(12);
-        doc.text(`Target Role: ${aiResults.ai_role}`, 18, currentY + 22);
-        currentY += 35;
-
-        if (aiResults.interest_match_reason) {
-            doc.setFontSize(11);
-            doc.setTextColor(16, 185, 129); 
-            doc.setFont("helvetica", "bold");
-            doc.text("Why this fits:", 14, currentY);
-            
-            doc.setTextColor(60, 60, 60);
-            doc.setFont("helvetica", "italic");
-            const splitReason = doc.splitTextToSize(`"${aiResults.interest_match_reason}"`, 182);
-            doc.text(splitReason, 14, currentY + 6);
-            currentY += 12 + (splitReason.length * 5); 
-        } else {
-            currentY += 5;
-        }
-
-        if (aiResults.ai_roadmap) {
-            doc.setFontSize(13);
-            doc.setTextColor(0, 0, 0);
-            doc.setFont("helvetica", "bold");
-            doc.text("Your Action Plan:", 14, currentY);
-            let cleanRoadmap = aiResults.ai_roadmap.replace(/<br\s*[\/]?>/gi, "\n").replace(/<li>/gi, "\n • ").replace(/<\/li>/gi, "").replace(/<[^>]*>?/gm, "").replace(/&nbsp;/g, " ").trim();
-            doc.setFontSize(11);
-            doc.setTextColor(60, 60, 60);
-            doc.setFont("helvetica", "normal");
-            const splitRoadmap = doc.splitTextToSize(cleanRoadmap, 182);
-            doc.text(splitRoadmap, 14, currentY + 8);
-            currentY += 15 + (splitRoadmap.length * 5); 
-        }
-
-        if (aiResults.universities && aiResults.universities.length > 0) {
-            doc.setFontSize(12);
-            doc.setTextColor(0, 0, 0);
-            doc.setFont("helvetica", "bold"); 
-            doc.text("Verified Institutional Pathways:", 14, currentY);
-            doc.setFont("helvetica", "normal"); 
-            const tableData = aiResults.universities.map(u => {
-                const reqSummary = u.requirements_met ? u.requirements_met.map(r => `${r.subject}: ${r.attained} (Req: ${r.required})`).join("\n") : "Standard Entry Met";
-                return [u.name, u.specific_course || u.course || u.course_name || "Recommended Degree", reqSummary, u.reason];
+            doc.autoTable({ 
+                startY: currentY + 5, 
+                head: [['Institution', 'Verified Course', 'Requirement Check', 'Reason']], 
+                body: tableData, 
+                theme: 'grid', 
+                headStyles: { fillColor: [79, 70, 229] }, 
+                columnStyles: { 0: { cellWidth: 40 }, 2: { cellWidth: 40 } }, 
+                styles: { fontSize: 8, cellPadding: 3 } 
             });
-            doc.autoTable({ startY: currentY + 5, head: [['Institution', 'Verified Course', 'Requirement Check', 'Reason']], body: tableData, theme: 'grid', headStyles: { fillColor: [79, 70, 229] }, columnStyles: { 0: { cellWidth: 40 }, 2: { cellWidth: 40 } }, styles: { fontSize: 8, cellPadding: 3 } });
         }
 
+        // --- ALTERNATIVE CAREERS TABLE ---
         let finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 15 : currentY + 20;
         if (finalY > 250) { doc.addPage(); finalY = 20; }
 
-        if (aiResults.alternative_careers && aiResults.alternative_careers.length > 0) {
+        if (data.alternative_careers && data.alternative_careers.length > 0) {
             doc.setFontSize(12);
             doc.setTextColor(0, 0, 0);
             doc.setFont("helvetica", "bold");
             doc.text("Alternative Career Pathways:", 14, finalY);
             doc.setFont("helvetica", "normal");
-            const altTableData = aiResults.alternative_careers.map(alt => [alt.name, alt.reason]);
-            doc.autoTable({ startY: finalY + 5, head: [['Backup Career', 'Why this is a good fit']], body: altTableData, theme: 'grid', headStyles: { fillColor: [255, 193, 7], textColor: [0, 0, 0] }, styles: { fontSize: 9, cellPadding: 4 } });
+            const altTableData = data.alternative_careers.map(alt => [alt.name, alt.reason]);
+            doc.autoTable({ 
+                startY: finalY + 5, 
+                head: [['Backup Career', 'Why this is a good fit']], 
+                body: altTableData, 
+                theme: 'grid', 
+                headStyles: { fillColor: [255, 193, 7], textColor: [0, 0, 0] }, 
+                styles: { fontSize: 9, cellPadding: 4 } 
+            });
         }
+        
         return doc;
     }
 
+    // 2. Button Action: Download LIVE PDF
+    function downloadPDF() {
+        if (!currentResults) { alert("Please run the analysis first!"); return; }
+        const doc = buildMasterPDF(currentResults, false);
+        const fileName = `${currentUser.replace(/\s+/g, '_')}_Placement_Report.pdf`;
+        doc.save(fileName);
+    }
+
+    // 3. Button Action: Download SAVED PDF
     function downloadSavedPDF() {
         if (!currentViewedReport) { alert("Error loading report data."); return; }
         const aiResults = currentViewedReport.ai_response || currentViewedReport;
@@ -1403,13 +1411,66 @@
         btn.disabled = true;
         
         setTimeout(() => {
-            const doc = buildSavedPDFDocument(aiResults, currentViewedReport);
+            const doc = buildMasterPDF(aiResults, true, currentViewedReport);
             const studentName = currentUser || "Student";
             const fileName = `${studentName.replace(/\s+/g, '_')}_Saved_Placement_Report.pdf`;
             doc.save(fileName);
             btn.innerHTML = originalHtml;
             btn.disabled = false;
         }, 300);
+    }
+
+    // 🌟 UPGRADED: Now handles both new reports and archived reports!
+  // 🌟 UPGRADED: Generates PDF on frontend and sends Base64 to Python
+    async function sendReportToEmail(reportToSend = currentResults, buttonElement = null) {
+        if (!reportToSend) {
+            alert("⚠️ No report found! Please generate or select a report first.");
+            return;
+        }
+
+        const btn = buttonElement || document.getElementById('emailReportBtn');
+        if (!btn) return;
+
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Preparing PDF...';
+        btn.disabled = true;
+
+        try {
+            // 1. GENERATE THE PDF DOC USING YOUR MASTER BUILDER
+            const isArchive = !!reportToSend.timestamp; 
+            const doc = buildMasterPDF(reportToSend, isArchive, reportToSend);
+
+            // 2. CONVERT THE DOC TO A BASE64 STRING
+            const pdfBase64 = doc.output('datauristring').split(',')[1];
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending Email...';
+
+            // 3. SEND THE PDF TO PYTHON
+            const response = await fetch('http://127.0.0.1:5001/send-report', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    username: currentUser,
+                    pdf_file: pdfBase64,
+                    filename: `${currentUser.replace(/\s+/g, '_')}_Placement_Report.pdf`,
+                    report: reportToSend
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert("✅ " + data.message);
+            } else {
+                alert("❌ Failed to send: " + (data.error || "Server error"));
+            }
+        } catch (error) {
+            console.error("Email Error:", error);
+            alert("❌ An error occurred while generating or sending the PDF.");
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
     }
 
     // --- EVENT LISTENERS ---
@@ -1432,19 +1493,20 @@
             event.preventDefault(); 
             refineRecommendations(); 
         }
-    });// --- PWA SERVICE WORKER REGISTRATION ---
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-            .then(registration => {
-                console.log('✅ Service Worker registered successfully with scope:', registration.scope);
-            })
-            .catch(error => {
-                console.error('❌ Service Worker registration failed:', error);
-            });
     });
-}
-</script>
 
+    // --- PWA SERVICE WORKER REGISTRATION ---
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js')
+                .then(registration => {
+                    console.log('✅ Service Worker registered successfully with scope:', registration.scope);
+                })
+                .catch(error => {
+                    console.error('❌ Service Worker registration failed:', error);
+                });
+        });
+    }
+</script>
 </body>
 </html>
