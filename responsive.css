@@ -53,9 +53,9 @@ button {
   }
 
   body:has(.main-content #inboxList) .sidebar .nav {
-    flex-direction: row !important;
-    flex-wrap: wrap;
-    gap: 6px;
+    flex-direction: column !important;
+    flex-wrap: nowrap;
+    gap: 0;
   }
 
   body:has(.main-content #inboxList) .sidebar .nav-item {
@@ -65,7 +65,7 @@ button {
   body:has(.main-content #inboxList) .main-content {
     width: 100%;
     margin: 0 !important;
-    padding: 18px 14px !important;
+    padding: 20px !important;
   }
 
   /* Keep report rows usable at phone widths. */
