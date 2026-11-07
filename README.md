@@ -7,7 +7,7 @@ recommendations with or without sharing grades.
 The app is split into two independently versioned projects:
 
 - `frntend/` - static web interface, served from `index.html`.
-- `backend/` - Flask API for accounts, chat, recommendations, and reports.
+- `backend/` - Django API for accounts, chat, recommendations, and reports.
 
 ## Features
 
@@ -17,7 +17,7 @@ The app is split into two independently versioned projects:
   preferences.
 - Optional PDF, image, and video attachments in chat.
 - Saved conversations in the browser and generated reports.
-- Responsive interface with a dark navy accent theme.
+- Responsive interface with a blue-and-green accent theme.
 
 See the [User Guide](USER_GUIDE.md) for instructions on using the app.
 
@@ -25,7 +25,8 @@ See the [User Guide](USER_GUIDE.md) for instructions on using the app.
 
 ### Backend
 
-Use Python 3.10 or later. From the backend directory:
+Use Python 3.10 or later. From the frontend project directory, move into
+`backend/`:
 
 ```powershell
 cd ..\backend
@@ -50,14 +51,20 @@ The Groq key enables text chat and recommendations. The Gemini key enables
 attachment analysis. Mail credentials are needed for email verification and
 other email features. Keep `.env` private and never commit real credentials.
 
-Start the API:
+Apply database migrations and start the Django API:
 
 ```powershell
-python app.py
+python manage.py migrate
+python manage.py runserver 0.0.0.0:5001
 ```
 
-The development server listens on port `5001` by default. `DATABASE_URL` can be
-set to a PostgreSQL connection string for a configured database.
+The development server listens on port `5001`. `DATABASE_URL` can be set to a
+PostgreSQL connection string; SQLite is used by default. On an existing
+deployment, the startup command uses Django's `--fake-initial` option to adopt
+the existing `user` and `student_log` tables without recreating them.
+
+Set `DJANGO_SECRET_KEY` to a private, randomly generated value in production.
+The backend runs Django through Gunicorn using `careerpath.wsgi:application`.
 
 ### Frontend
 
@@ -68,8 +75,8 @@ python -m http.server 8765
 ```
 
 Open <http://127.0.0.1:8765/> in a browser. The frontend currently has its API
-base URL set in `index.html` and `login.html` to the hosted CareerPath AI
-service. To use a local backend instead, update both `API_URL` constants to
+base URL set in `index.html`, `login.html`, and `reports.html` to the hosted
+CareerPath AI service. To use a local backend instead, update each `API_URL` to
 `http://127.0.0.1:5001`.
 
 The frontend loads Bootstrap, Font Awesome, Google Fonts, and other browser
@@ -81,16 +88,18 @@ The backend tests use Python's built-in `unittest` runner. From the backend
 directory:
 
 ```powershell
+python manage.py test
 python -m unittest discover -s tests -v
 ```
 
-The tests cover chat and recommendation behavior, optional grades, and course
-catalogue discovery and verification.
+The Django tests cover API requests, account flows, image upload validation,
+and CORS. The `unittest` suite covers AI chat and recommendation behavior,
+optional grades, and course catalogue discovery and verification.
 
 ## Deployment notes
 
 The frontend is static HTML and can be served by a static hosting provider. The
-backend must run as a separate Flask service and be configured with the
+backend must run as a separate Django service and be configured with the
 credentials for the features it provides. Configure production secrets in the
 hosting provider's environment settings, not in source files or committed
 configuration.
@@ -105,7 +114,10 @@ frntend/
   README.md        Project setup and developer notes
   USER_GUIDE.md    Student-facing usage instructions
 ../backend/
-  app.py           Flask API
+  manage.py        Django management commands
+  careerpath/      Django settings and WSGI entry point
+  api/             Django models, routes, and tests
+  app.py           Previous Flask implementation, retained during migration
   utils/           AI, database, and course discovery helpers
   tests/           Backend unit tests
 ```
