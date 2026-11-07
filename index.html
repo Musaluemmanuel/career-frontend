@@ -343,6 +343,26 @@
         }
 
         @media (max-width: 768px) {
+            #dataConsentModal {
+                width: 100vw;
+                padding-right: 0 !important;
+            }
+
+            #dataConsentModal .modal-dialog {
+                width: calc(100% - 20px);
+                max-width: 500px;
+                margin: 10px auto !important;
+            }
+        }
+
+        @media (max-width: 520px) {
+            #dataConsentModal .modal-dialog {
+                width: calc(100vw - 20px);
+                margin: 10px 0 10px 10px !important;
+            }
+        }
+
+        @media (max-width: 768px) {
             #main-app > #main-sidebar {
                 position: fixed !important;
                 inset: 0 auto 0 0 !important;
@@ -907,7 +927,10 @@
 
         }
 
-    </style><link rel="manifest" href="manifest.json">
+    </style>
+    <link rel="stylesheet" href="/responsive.css">
+    <script src="/auth-bridge.js" defer></script>
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1d4ed8">
 <link rel="apple-touch-icon" href="icon-192.png">
 </head>
@@ -1347,8 +1370,8 @@
     let careerChatAttachments = [];
     let careerSpeechRecognition = null;
     let dataConsent = { personalization: false, improvement: false, recorded: false };
-    let initialConsentPending = false;
     let initialConsentResolver = null;
+    let pendingConsentNotice = "";
     
     const careerGradeSubjects = [
         { key: "Math", label: "Maths" },
@@ -1400,6 +1423,10 @@ window.onload = async () => {
         document.getElementById("sidebar-user").innerText = currentUser;
         await loadDataConsent();
         initializeCareerChat();
+        if (pendingConsentNotice) {
+            showCareerChatNotice(pendingConsentNotice);
+            pendingConsentNotice = "";
+        }
         updateTotalPoints();
         document.getElementById('careerChatInput').addEventListener('keydown', event => {
             if (event.key === 'Enter' && !event.shiftKey) {
@@ -1421,6 +1448,43 @@ window.onload = async () => {
         document.getElementById('improvementConsent').checked = consent.improvement === true;
     }
 
+    function readDeviceDataConsent() {
+        try {
+            const saved = JSON.parse(localStorage.getItem(`${currentUser}_data_consent`) || "null");
+            return saved && typeof saved.personalization === "boolean"
+                ? { personalization: saved.personalization }
+                : null;
+        } catch (error) {
+            console.error('Could not read device data choices.', error);
+            return null;
+        }
+    }
+
+    function saveDeviceDataConsent(personalization) {
+        try {
+            localStorage.setItem(
+                `${currentUser}_data_consent`,
+                JSON.stringify({ personalization })
+            );
+            return true;
+        } catch (error) {
+            console.error('Could not save device data choices.', error);
+            return false;
+        }
+    }
+
+    function finishInitialDataConsent() {
+        if (initialConsentResolver) {
+            initialConsentResolver();
+            initialConsentResolver = null;
+        }
+    }
+
+    function showDataConsentFallbackNotice(message) {
+        if (careerChatState) showCareerChatNotice(message);
+        else pendingConsentNotice = message;
+    }
+
     function showDataConsentStatus(message) {
         const status = document.getElementById('dataConsentStatus');
         status.textContent = message;
@@ -1438,31 +1502,48 @@ window.onload = async () => {
 
     async function loadDataConsent() {
         const token = sessionStorage.getItem('career_access_token');
+        let accountPreferencesUnavailable = !token;
         try {
-            if (!token) throw new Error('No signed-in session token is available.');
-            const response = await fetch(`${API_URL}/data-consent`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.error || 'Could not load your data choices.');
-            if (result.recorded) {
-                dataConsent = {
-                    personalization: result.personalization === true,
-                    improvement: result.improvement === true,
-                    recorded: true
-                };
-                setDataConsentFields(dataConsent);
-                updateCareerChatPrivacyLabel();
-                return;
+            if (token) {
+                const response = await fetch(`${API_URL}/data-consent`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || 'Could not load your data choices.');
+                accountPreferencesUnavailable = false;
+                if (result.recorded) {
+                    dataConsent = {
+                        personalization: result.personalization === true,
+                        improvement: result.improvement === true,
+                        recorded: true
+                    };
+                    saveDeviceDataConsent(dataConsent.personalization);
+                    setDataConsentFields(dataConsent);
+                    updateCareerChatPrivacyLabel();
+                    return;
+                }
             }
         } catch (error) {
-            console.error('Could not load saved data choices.', error);
-            showDataConsentStatus('We could not load or save your preferences right now. Optional use stays off unless your choices can be saved. You can continue with optional use off.');
+            console.warn('Could not load account data choices; using device choices if available.', error);
+        }
+
+        const deviceConsent = readDeviceDataConsent();
+        if (deviceConsent) {
+            dataConsent = {
+                personalization: deviceConsent.personalization,
+                improvement: false,
+                recorded: false
+            };
+            setDataConsentFields(dataConsent);
+            updateCareerChatPrivacyLabel();
+            return;
         }
 
         dataConsent = { personalization: false, improvement: false, recorded: false };
         setDataConsentFields(dataConsent);
-        initialConsentPending = true;
+        showDataConsentStatus(accountPreferencesUnavailable
+            ? 'Account preferences are unavailable, but you can continue without signing in again. Device-only saving is optional; trend sharing stays off unless your account connection is available.'
+            : '');
         const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('dataConsentModal'), {
             backdrop: 'static',
             keyboard: false
@@ -1471,11 +1552,10 @@ window.onload = async () => {
         await new Promise(resolve => {
             initialConsentResolver = resolve;
         });
-        initialConsentPending = false;
         updateCareerChatPrivacyLabel();
     }
 
-    async function saveDataConsentChoices(choices, allowOfflineOptOut = false) {
+    async function saveDataConsentChoices(choices) {
         const next = choices || {
             personalization: document.getElementById('personalizationConsent').checked,
             improvement: document.getElementById('improvementConsent').checked
@@ -1485,47 +1565,74 @@ window.onload = async () => {
         saveButton.disabled = true;
         showDataConsentStatus('');
         try {
-            if (!token) throw new Error('Sign in again before saving data choices.');
-            const response = await fetch(`${API_URL}/data-consent`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify(next)
-            });
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.error || 'Could not save your data choices.');
-            dataConsent = {
-                personalization: result.personalization === true,
-                improvement: result.improvement === true,
-                recorded: true
-            };
+            let result = null;
+            if (token) {
+                const response = await fetch(`${API_URL}/data-consent`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify(next)
+                });
+                result = await response.json();
+                if (!response.ok) throw new Error(result.error || 'Could not save your data choices.');
+            }
+
+            if (result) {
+                dataConsent = {
+                    personalization: result.personalization === true,
+                    improvement: result.improvement === true,
+                    recorded: true
+                };
+                saveDeviceDataConsent(dataConsent.personalization);
+            } else {
+                if (!saveDeviceDataConsent(next.personalization)) {
+                    showDataConsentStatus('Your choices could not be saved in this browser. You can continue with optional use off; no sign-in is required.');
+                    return false;
+                }
+                dataConsent = {
+                    personalization: next.personalization,
+                    improvement: false,
+                    recorded: false
+                };
+            }
+
             setDataConsentFields(dataConsent);
             updateCareerChatPrivacyLabel();
-            bootstrap.Modal.getInstance(document.getElementById('dataConsentModal')).hide();
-            if (initialConsentResolver) {
-                initialConsentResolver();
-                initialConsentResolver = null;
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('dataConsentModal')).hide();
+            finishInitialDataConsent();
+            if (!dataConsent.recorded && next.improvement) {
+                showDataConsentFallbackNotice('Your device-only choice was saved, but trend sharing stays off until your account preferences can be reached.');
             }
             return true;
         } catch (error) {
-            console.error('Could not save data choices.', error);
-            if (
-                allowOfflineOptOut
-                && !dataConsent.recorded
-                && !next.personalization
-                && !next.improvement
-            ) {
-                dataConsent = { personalization: false, improvement: false, recorded: false };
-                bootstrap.Modal.getInstance(document.getElementById('dataConsentModal')).hide();
-                if (initialConsentResolver) {
-                    initialConsentResolver();
-                    initialConsentResolver = null;
-                }
-                return false;
+            console.warn('Could not save account data choices; trying a device-only choice.', error);
+            if (saveDeviceDataConsent(next.personalization)) {
+                dataConsent = {
+                    personalization: next.personalization,
+                    improvement: false,
+                    recorded: false
+                };
+                setDataConsentFields(dataConsent);
+                updateCareerChatPrivacyLabel();
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('dataConsentModal')).hide();
+                finishInitialDataConsent();
+                showDataConsentFallbackNotice(next.improvement
+                    ? 'Your device-only choice was saved. Trend sharing remains off because account preferences could not be reached.'
+                    : 'Your device-only choice was saved. No sign-in is needed to continue.');
+                return true;
             }
-            showDataConsentStatus(`${error.message} Your choices were not saved.`);
+            if (!next.personalization && !next.improvement) {
+                dataConsent = { personalization: false, improvement: false, recorded: false };
+                setDataConsentFields(dataConsent);
+                updateCareerChatPrivacyLabel();
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('dataConsentModal')).hide();
+                finishInitialDataConsent();
+                showDataConsentFallbackNotice('Optional saving could not be recorded on this device; it remains off for this session.');
+                return true;
+            }
+            showDataConsentStatus(`${error.message} Your device-only choice could not be saved. You can continue with optional use off.`);
             return false;
         } finally {
             saveButton.disabled = false;
@@ -1535,10 +1642,7 @@ window.onload = async () => {
     function declineOptionalDataUse() {
         document.getElementById('personalizationConsent').checked = false;
         document.getElementById('improvementConsent').checked = false;
-        saveDataConsentChoices(
-            { personalization: false, improvement: false },
-            true
-        );
+        saveDataConsentChoices({ personalization: false, improvement: false });
     }
 
     function openDataConsentSettings() {
@@ -2280,7 +2384,15 @@ window.onload = async () => {
                 });
             }
             const data = await response.json().catch(() => ({}));
-            if (!response.ok) throw new Error(data.error || "I couldn't send that message. Please try again.");
+            if (!response.ok) {
+                if (response.status === 404) {
+                    throw new Error('The chat service is not available on the server yet. Your message is kept so you can retry; you are still signed in.');
+                }
+                if (response.status === 401) {
+                    throw new Error('The server could not verify this chat session. Your dashboard remains open; you do not need to sign in again to continue.');
+                }
+                throw new Error(data.error || `The chat service returned an error (${response.status}). Please try again.`);
+            }
             if (
                 typeof data.reply !== "string"
                 || !data.reply.trim()
@@ -3149,14 +3261,18 @@ try {
                 body: JSON.stringify(userData) // NOTE: use JSON.stringify(grades) if your code uses 'grades' instead of 'userData'
             });
 
-            // CHECKPOINT 1: Network/Server Status
+            const data = await response.json().catch(() => ({}));
             if (!response.ok) {
                 console.error(`❌ FAILURE AT STEP 2: Server responded with ${response.status}`);
-                throw new Error(`Backend Offline (${response.status})`);
+                if (response.status === 401) {
+                    throw new Error(data.error || 'The recommendation service could not verify this session. Your dashboard remains open; you do not need to sign in again.');
+                }
+                if (response.status === 404) {
+                    throw new Error('The recommendation service is not available on the server yet. Your dashboard remains open.');
+                }
+                throw new Error(data.error || `The recommendation service returned an error (${response.status}).`);
             }
             console.log("%c✅ Step 2: Connection Established", "color: #27ae60;");
-
-            const data = await response.json();
             
             // CHECKPOINT 2: Math Engine Check
             if (data.validated_points == null && Object.keys(userData.grades || {}).length < 7) {
@@ -3209,13 +3325,17 @@ if (!data.alternative_careers || data.alternative_careers.length === 0) {
         } catch (error) {
             console.groupEnd(); // Ensure group closes on error
             console.error("%c🚨 CRITICAL ERROR:", "color: #e74c3c; font-weight: bold;", error.message);
-            
-            document.getElementById('aiLoader').innerHTML = `
-                <div class="alert alert-danger mx-auto" style="max-width: 500px;">
-                    <h4 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Analysis Failed</h4>
-                    <p class="mb-0">Could not complete the recommendation process: ${error.message}</p>
-                </div>
-            `;
+            const failure = document.createElement('div');
+            failure.className = "alert alert-danger mx-auto";
+            failure.style.maxWidth = "500px";
+            const heading = document.createElement('h4');
+            heading.className = "alert-heading";
+            heading.textContent = "Analysis Failed";
+            const message = document.createElement('p');
+            message.className = "mb-0";
+            message.textContent = `Could not complete the recommendation process: ${error.message}`;
+            failure.append(heading, message);
+            document.getElementById('aiLoader').replaceChildren(failure);
         }
     }
     function refineRecommendations() { 

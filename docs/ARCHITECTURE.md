@@ -22,8 +22,10 @@ from CDNs.
 2. The pages call the configured API URL for account, chat, history,
    recommendation, and email operations.
 3. The backend returns a signed access token after verified sign-in.
-4. The service worker loads `auth-bridge.js`; the bridge stores the token in
-   tab-scoped `sessionStorage` and attaches it to `/recommend`.
+4. `index.html` loads `auth-bridge.js` directly so authentication works on a
+   first visit; the service worker injects it into other eligible HTML pages
+   when it is not already present. The bridge stores the token in tab-scoped
+   `sessionStorage` and attaches it to `/recommend`.
 5. Chat drafts, previous conversations, and saved profile values use browser
    `localStorage`; they are not a cross-device backup.
 
@@ -36,8 +38,8 @@ The worker's `CACHE_NAME` identifies its cached app shell. Change it when
 updating the cache asset list so existing clients install the new version.
 Test first install, activation over an older cache, offline fallback, and a
 hard refresh after deployment. The worker injects the auth bridge and
-responsive stylesheet into same-origin HTML navigations; avoid injecting
-duplicate copies into pages that already include those assets.
+responsive stylesheet into same-origin HTML navigations when those assets are
+not already included by the page.
 
 ## Configuration boundary
 

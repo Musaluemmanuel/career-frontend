@@ -124,7 +124,9 @@ button {
   }
 
   .modal-dialog {
-    margin: 10px;
+    width: calc(100% - 20px);
+    max-width: 500px;
+    margin: 10px auto;
   }
 
   .modal-content {

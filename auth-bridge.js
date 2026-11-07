@@ -26,9 +26,8 @@
 
         if (isRecommendation) {
             if (!token) {
-                window.location.assign('login.html');
                 return new Response(JSON.stringify({
-                    error: 'Please sign in again to continue.',
+                    error: 'The server session for recommendations is unavailable. Your dashboard session is still open; please try again after the server connection is restored.',
                     code: 'authentication_required'
                 }), { status: 401, headers: { 'Content-Type': 'application/json' } });
             }
@@ -55,7 +54,6 @@
 
         if (isRecommendation && response.status === 401) {
             sessionStorage.removeItem(TOKEN_KEY);
-            window.location.assign('login.html');
         } else if (isRecommendation && response.status === 402) {
             try {
                 const body = await response.clone().json();

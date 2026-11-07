@@ -132,6 +132,17 @@
         let isLoginMode = true;
         let pendingVerificationEmail = ""; 
 
+        function storeAccessToken(data) {
+            if (typeof data.access_token === "string" && data.access_token.trim()) {
+                sessionStorage.setItem('career_access_token', data.access_token);
+                sessionStorage.setItem('career_user_email', data.user?.email || data.email || "");
+                return true;
+            }
+            sessionStorage.removeItem('career_access_token');
+            sessionStorage.removeItem('career_user_email');
+            return false;
+        }
+
         // ==========================================
         // ✨ MAGIC LINK / AUTO-VERIFY LOGIC ✨
         // ==========================================
@@ -238,11 +249,14 @@
                 if (response.ok) {
                     if (isLoginMode) {
                         // LOGIN SUCCESS
+                        const hasAccessToken = storeAccessToken(data);
                         msg.className = "text-success small fw-bold mt-2";
-                        msg.innerText = "Success! Redirecting...";
+                        msg.innerText = hasAccessToken
+                            ? "Success! Redirecting..."
+                            : "Signed in. Some server features may be unavailable until the connection is restored.";
                         localStorage.setItem('user_name', data.user.name); // Using verified name from backend
                         localStorage.setItem('user_email', data.user.email);
-                        setTimeout(() => { window.location.href = "index.html"; }, 500);
+                        setTimeout(() => { window.location.href = "index.html"; }, hasAccessToken ? 500 : 1200);
                     } else {
                         // REGISTRATION SUCCESS -> SHOW VERIFICATION
                         pendingVerificationEmail = email; 
@@ -304,6 +318,7 @@
                 if (response.ok) {
                     messageEl.className = "text-success small fw-bold mt-3";
                     messageEl.textContent = "Account verified! Logging you in...";
+                    storeAccessToken(data);
                     
                     // --- AUTO-LOGIN TRIGGER ---
                     localStorage.setItem('user_name', data.user.name); 
@@ -419,6 +434,7 @@
                 const data = await res.json();
                 
                 if (res.ok) {
+                    storeAccessToken(data);
                     // Save user data
                     localStorage.setItem('user_name', data.name);
                     localStorage.setItem('user_email', data.email);

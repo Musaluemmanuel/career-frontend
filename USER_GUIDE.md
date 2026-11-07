@@ -71,6 +71,11 @@ Open **Previous chats** in the sidebar to select a saved conversation. This
 browser storage is not a substitute for a backup and may not be available on
 another device or browser.
 
+Device-only saving is optional. If account preferences cannot be reached, you
+can continue without signing in again; any device-only choice stays in this
+browser, and trend sharing remains off until the account connection is
+available.
+
 On a desktop, use the sidebar control to hide or show the sidebar. On a
 mobile-sized screen, use the navigation menu button to open it; tap outside
 the menu or press Escape to close it.

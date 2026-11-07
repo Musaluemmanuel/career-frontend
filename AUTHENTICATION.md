@@ -1,10 +1,11 @@
 # Frontend authentication integration
 
-The static app loads `auth-bridge.js` through its service worker. It captures
-the signed `access_token` returned by the backend after verified password
-login, Google login, or verification, keeps it in tab-scoped `sessionStorage`,
-and adds the bearer `Authorization` header to `/recommend` calls. It does not
-contain or expose provider API keys.
+The dashboard loads `auth-bridge.js` directly, while the service worker makes
+it available on other eligible pages when needed. It captures the signed
+`access_token` returned by the backend after verified password login, Google
+login, or verification, keeps it in tab-scoped `sessionStorage`, and adds the
+bearer `Authorization` header to `/recommend` calls. It does not contain or
+expose provider API keys.
 
 The backend allows three authenticated recommendation attempts per account.
 A fourth request receives HTTP 402 and the bridge displays the
