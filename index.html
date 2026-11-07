@@ -632,6 +632,33 @@
             padding-left: 4px;
             font-size: 1.03rem;
         }
+        .career-chat-message.assistant p {
+            margin: 0 0 0.65rem;
+        }
+        .career-chat-message.assistant p:last-child {
+            margin-bottom: 0;
+        }
+        .career-chat-message.assistant ul,
+        .career-chat-message.assistant ol {
+            margin: 0.35rem 0 0.75rem;
+            padding-left: 1.35rem;
+        }
+        .career-chat-message.assistant li {
+            margin: 0.18rem 0;
+        }
+        .career-chat-message.assistant h2,
+        .career-chat-message.assistant h3,
+        .career-chat-message.assistant h4,
+        .career-chat-message.assistant h5,
+        .career-chat-message.assistant h6 {
+            margin: 0.65rem 0 0.35rem;
+            font-weight: 700;
+        }
+        .career-chat-message.assistant code {
+            padding: 0.1rem 0.3rem;
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.06);
+        }
 
         .career-chat-message.user {
             align-self: flex-end;
@@ -2326,6 +2353,67 @@ window.onload = async () => {
             : "";
     }
 
+    function escapeCareerChatHtml(value) {
+        return String(value || "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function formatCareerChatInline(value) {
+        let formatted = escapeCareerChatHtml(value);
+        formatted = formatted.replace(/`([^`]+)`/g, "<code>$1</code>");
+        formatted = formatted.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+        formatted = formatted.replace(/__([^_]+)__/g, "<strong>$1</strong>");
+        formatted = formatted.replace(/(^|[^*])\*([^*]+)\*/g, "$1<em>$2</em>");
+        formatted = formatted.replace(/(^|[^_])_([^_]+)_/g, "$1<em>$2</em>");
+        return formatted;
+    }
+
+    function renderCareerChatMarkdown(container, value) {
+        const lines = String(value || "").replace(/\r\n?/g, "\n").split("\n");
+        container.replaceChildren();
+        let paragraphLines = [];
+        let unordered = null;
+        let ordered = null;
+        const flushParagraph = () => {
+            if (!paragraphLines.length) return;
+            const paragraph = document.createElement("p");
+            paragraph.innerHTML = paragraphLines.map(formatCareerChatInline).join("<br>");
+            container.appendChild(paragraph);
+            paragraphLines = [];
+        };
+        const flushLists = () => {
+            if (unordered) { container.appendChild(unordered); unordered = null; }
+            if (ordered) { container.appendChild(ordered); ordered = null; }
+        };
+        lines.forEach((line) => {
+            const trimmed = line.trim();
+            if (!trimmed) { flushParagraph(); flushLists(); return; }
+            const heading = trimmed.match(/^#{1,4}\s+(.+)$/);
+            const bullet = trimmed.match(/^[-*+]\s+(.+)$/);
+            const numbered = trimmed.match(/^\d+[.)]\s+(.+)$/);
+            if (heading) {
+                flushParagraph(); flushLists();
+                const level = Math.min(trimmed.match(/^#+/)[0].length + 1, 6);
+                const element = document.createElement(`h${level}`);
+                element.innerHTML = formatCareerChatInline(heading[1]);
+                container.appendChild(element);
+            } else if (bullet) {
+                flushParagraph(); if (ordered) { container.appendChild(ordered); ordered = null; }
+                if (!unordered) unordered = document.createElement("ul");
+                const item = document.createElement("li"); item.innerHTML = formatCareerChatInline(bullet[1]); unordered.appendChild(item);
+            } else if (numbered) {
+                flushParagraph(); if (unordered) { container.appendChild(unordered); unordered = null; }
+                if (!ordered) ordered = document.createElement("ol");
+                const item = document.createElement("li"); item.innerHTML = formatCareerChatInline(numbered[1]); ordered.appendChild(item);
+            } else { flushLists(); paragraphLines.push(trimmed); }
+        });
+        flushParagraph(); flushLists();
+    }
+
     function renderCareerChat() {
         if (!careerChatState) return;
         const messageLog = document.getElementById('careerChatMessages');
@@ -2370,7 +2458,11 @@ window.onload = async () => {
         careerChatState.messages.forEach((message, index) => {
             const bubble = document.createElement('div');
             bubble.className = `career-chat-message ${message.role === "user" ? "user" : "assistant"}`;
-            bubble.textContent = message.text;
+            if (message.role === "assistant") {
+                renderCareerChatMarkdown(bubble, message.text);
+            } else {
+                bubble.textContent = message.text;
+            }
             messages.appendChild(bubble);
             if (message.role === "assistant" && message.result) {
                 renderCareerRecommendationCard(messages, message.result);
