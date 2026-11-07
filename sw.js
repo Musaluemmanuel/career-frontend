@@ -1,4 +1,4 @@
-const CACHE_NAME = 'career-v12-careerpath-brand';
+const CACHE_NAME = 'career-v13-careerpath-logo';
 const ASSETS = [
     './',
     './index.html',
