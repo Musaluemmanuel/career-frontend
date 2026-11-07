@@ -82,6 +82,14 @@ CareerPath AI service. To use a local backend instead, update each `API_URL` to
 The frontend loads Bootstrap, Font Awesome, Google Fonts, and other browser
 libraries from external CDNs, so those resources require an internet connection.
 
+## Branding assets
+
+The official CareerPath AI image is stored in
+[`icons/careerpath-logo.png`](icons/careerpath-logo.png). Login, dashboard,
+chat, reports, manifest, favicon, and Apple touch-icon references use this
+asset. When replacing the image, update all PWA icon sizes and increment the
+service-worker `CACHE_NAME` so browsers invalidate the previous cached logo.
+
 ## Tests
 
 The backend tests use Python's built-in `unittest` runner. From the backend
