@@ -15,56 +15,175 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wordcloud2.js/1.2.2/wordcloud2.min.js"></script>
 
     <style>
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #f4f6f9; 
+        :root {
+            --career-ink: #0b1f3a;
+            --career-ink-soft: #07172e;
+            --career-text: #000;
+            --career-muted: #64748b;
+            --career-border: #dbeafe;
+            --career-surface: #f8fbff;
+            --career-sidebar: #eff6ff;
+            --bs-primary: var(--career-ink);
+            --bs-primary-rgb: 11, 31, 58;
+            --bs-link-color: var(--career-ink);
+            --bs-link-hover-color: var(--career-ink-soft);
+        }
+
+        .btn-primary {
+            --bs-btn-bg: var(--career-ink);
+            --bs-btn-border-color: var(--career-ink);
+            --bs-btn-hover-bg: var(--career-ink-soft);
+            --bs-btn-hover-border-color: var(--career-ink-soft);
+            --bs-btn-active-bg: var(--career-ink-soft);
+            --bs-btn-active-border-color: var(--career-ink-soft);
+        }
+
+        .btn-outline-primary {
+            --bs-btn-color: var(--career-ink);
+            --bs-btn-border-color: var(--career-ink);
+            --bs-btn-hover-bg: var(--career-ink);
+            --bs-btn-hover-border-color: var(--career-ink);
+            --bs-btn-active-bg: var(--career-ink);
+            --bs-btn-active-border-color: var(--career-ink);
+        }
+
+        .text-primary {
+            color: var(--career-ink) !important;
+        }
+
+        .text-info {
+            color: var(--career-ink) !important;
+        }
+
+        .btn-outline-info {
+            --bs-btn-color: var(--career-ink);
+            --bs-btn-border-color: var(--career-border);
+            --bs-btn-hover-color: #fff;
+            --bs-btn-hover-bg: var(--career-ink);
+            --bs-btn-hover-border-color: var(--career-ink);
+        }
+
+        .bg-primary,
+        .progress-bar.bg-primary {
+            background-color: var(--career-ink) !important;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--career-surface);
         }
         
-        .sidebar { 
-            height: 100vh; 
-            background: #1e293b; 
-            color: white; 
-            position: fixed; 
-            width: 280px; 
-            z-index: 1000; 
+        .sidebar {
+            height: 100vh;
+            background: var(--career-sidebar);
+            color: var(--career-text);
+            position: fixed;
+            width: 280px;
+            z-index: 1000;
             overflow-y: auto;
         }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .sidebar-brand h4 {
+            min-width: 0;
+            margin-bottom: 0;
+            color: var(--career-ink) !important;
+        }
+
+        .sidebar-brand h4 .text-light {
+            color: #314967 !important;
+        }
+
+        .sidebar-brand-toggle {
+            border: 0;
+            background: transparent;
+            box-shadow: none;
+            color: var(--career-ink);
+        }
+
+        .sidebar-brand-toggle:hover,
+        .sidebar-brand-toggle:active {
+            border: 0;
+            background: var(--career-border);
+            color: var(--career-ink-soft);
+            box-shadow: none;
+        }
+
+        .sidebar-brand-toggle:focus-visible {
+            outline: 2px solid var(--career-ink);
+            outline-offset: 2px;
+        }
+
+        .mobile-chat-menu {
+            display: none !important;
+        }
+
+        #main-app.sidebar-hidden .sidebar {
+            transform: translateX(-100%);
+            pointer-events: none;
+        }
+
+        #main-app.sidebar-hidden .main-content {
+            margin-left: 0;
+            padding-top: 60px;
+        }
+
+        #main-app.sidebar-hidden .mobile-chat-menu {
+            position: fixed;
+            z-index: 1030;
+            top: 10px;
+            left: 10px;
+            display: flex !important;
+            margin: 0 !important;
+        }
+
+        #main-app.sidebar-hidden .career-chat-card,
+        #main-app.sidebar-hidden .career-chat-card.is-empty {
+            height: calc(100dvh - 100px);
+        }
         
-        .nav-link { 
-            color: rgba(255,255,255,0.7); 
-            transition: 0.3s; 
-            margin-bottom: 5px; 
-            border-radius: 8px; 
+        .nav-link {
+            color: var(--career-muted);
+            transition: 0.3s;
+            margin-bottom: 5px;
+            border-radius: 8px;
             font-weight: 500;
         }
         
-        .nav-link:hover, .nav-link.active { 
-            color: white; 
-            background: rgba(255,255,255,0.1); 
+        .nav-link:hover, .nav-link.active {
+            color: var(--career-ink);
+            background: #dbeafe;
         }
         
-        .main-content { 
-            margin-left: 280px; 
-            padding: 40px; 
+        .main-content {
+            margin-left: 280px;
+            padding: 40px;
         }
         
-        .ai-card { 
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); 
-            color: white; 
-            border-radius: 16px; 
+        .ai-card {
+            background: #fff;
+            color: var(--career-text);
+            border-radius: 16px;
+            border: 1px solid var(--career-border);
         }
         
-        .community-box { 
-            background-color: #e0e7ff; 
-            border-left: 5px solid #4f46e5; 
-            color: #3730a3; 
-            border-radius: 8px; 
+        .community-box {
+            background-color: var(--career-sidebar);
+            border-left: 5px solid var(--career-ink);
+            color: var(--career-text);
+            border-radius: 8px;
         }
         
-        .reason-box { 
-            background-color: #f0fdf4; 
-            border-left: 5px solid #10b981; 
-            border-radius: 12px; 
+        .reason-box {
+            background-color: var(--career-sidebar);
+            border-left: 5px solid var(--career-ink-soft);
+            border-radius: 12px;
         }
         
         .uni-card { 
@@ -81,22 +200,22 @@
             box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); 
         }
         
-        .alt-card { 
-            border-left: 4px solid #f59e0b; 
-            background-color: #fffbeb; 
+        .alt-card {
+            border-left: 4px solid var(--career-ink-soft);
+            background-color: var(--career-sidebar);
             transition: all 0.3s ease; 
             cursor: pointer; 
         }
         
         .alt-card:hover { 
             transform: translateX(8px); 
-            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15); 
+            box-shadow: 0 4px 12px rgba(51, 65, 85, 0.12);
         }
         
-        .roadmap-container strong { 
+        .roadmap-container strong {
             display: block; 
             margin-top: 15px; 
-            color: #1e293b; 
+            color: var(--career-ink);
             font-size: 1.1rem; 
         }
         
@@ -107,43 +226,42 @@
             font-family: 'Poppins', sans-serif; 
         }
         
-        .grade-pink { color: #ec4899; }
-        .points-green { color: #10b981; }
+        .grade-pink, .points-green { color: var(--career-ink); }
 
         /* Inbox Styling for Saved Reports */
-        .inbox-container { 
-            background: white; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
-            overflow: hidden; 
+        .inbox-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
-        .inbox-header { 
+        .inbox-header {
             background-color: #f8fafc; 
-            border-bottom: 1px solid #e2e8f0; 
+            border-bottom: 1px solid var(--career-border);
             padding: 15px 20px; 
             font-weight: 600; 
             color: #64748b; 
             display: flex; 
         }
-        .inbox-row { 
+        .inbox-row {
             display: flex; 
             align-items: center; 
             padding: 16px 20px; 
-            border-bottom: 1px solid #f1f5f9; 
+            border-bottom: 1px solid var(--career-border);
             cursor: pointer; 
             transition: background 0.2s; 
         }
         .inbox-row:hover { 
             background-color: #f8fafc; 
-            box-shadow: inset 4px 0 0 #4f46e5; 
+            box-shadow: inset 4px 0 0 var(--career-ink);
         }
         .inbox-row:last-child { border-bottom: none; }
         .star-col { width: 40px; color: #cbd5e1; }
-        .inbox-row:hover .star-col { color: #f59e0b; }
+        .inbox-row:hover .star-col { color: var(--career-ink); }
         .course-col { flex: 1; min-width: 0; padding-right: 20px;}
         .level-col { width: 120px; text-align: right; padding-right: 20px; } 
         .date-col { width: 100px; text-align: right; color: #64748b; font-size: 0.85rem; font-weight: 500;}
-        .course-title { font-weight: 600; color: #1e293b; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        .course-title { font-weight: 600; color: var(--career-text); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
         .course-subtitle { font-size: 0.85rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
         .level-badge { font-size: 0.75rem; padding: 5px 10px; }
         
@@ -160,55 +278,634 @@
         }
 
         .sidebar::-webkit-scrollbar { width: 6px; }
-        .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+        .sidebar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        .sidebar .text-white,
+        .sidebar .text-light {
+            color: var(--career-text) !important;
+        }
+
+        .sidebar .text-secondary {
+            color: var(--career-muted) !important;
+        }
+
+        .sidebar .btn-outline-info,
+        .sidebar .btn-outline-light {
+            --bs-btn-color: var(--career-text);
+            --bs-btn-border-color: #cbd5e1;
+            --bs-btn-hover-color: var(--career-text);
+            --bs-btn-hover-bg: #dbeafe;
+            --bs-btn-hover-border-color: #cbd5e1;
+        }
+
+        .sidebar .border-secondary {
+            border-color: #cbd5e1 !important;
+        }
+
+        .sidebar-conversations {
+            margin: 0.75rem 0 1.25rem;
+        }
+
+        .sidebar-conversations-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--career-muted);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        #careerChatHistory {
+            padding-left: 0;
+            border: 0;
+            background-color: transparent;
+            box-shadow: none;
+            color: var(--career-text);
+            font-weight: 600;
+        }
+
+        #careerChatHistory:focus {
+            border: 0;
+            box-shadow: none;
+        }
+
+        .sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        #mobile-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1040;
+        }
 
         @media (max-width: 768px) {
-            .sidebar { width: 100%; height: auto; position: relative; }
-            .main-content { margin-left: 0; padding: 20px; }
+            .sidebar {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 280px !important;
+                height: 100vh !important;
+                height: 100dvh !important;
+                z-index: 1050 !important;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show-mobile {
+                transform: translateX(0);
+                box-shadow: 4px 0 15px rgba(0,0,0,0.5);
+            }
+
+            #main-app.sidebar-hidden .sidebar.show-mobile {
+                transform: translateX(0);
+                pointer-events: auto;
+            }
+
+            .sidebar-brand-toggle {
+                display: none;
+            }
+
+            .main-content {
+                width: 100% !important;
+                margin-left: 0 !important;
+                padding: 15px !important;
+            }
+
+            .mobile-chat-menu {
+                display: flex !important;
+                justify-content: flex-start !important;
+                margin-bottom: 8px !important;
+                padding: 4px !important;
+                background: transparent !important;
+                box-shadow: none !important;
+            }
+
             .date-col, .level-col { display: none; }
-        } 
-        /* --- MOBILE RESPONSIVENESS & SLIDING SIDEBAR --- */
-.sidebar {
-    transition: all 0.3s ease-in-out; /* Makes the sliding smooth */
-}
 
-/* --- BULLETPROOF MOBILE RESPONSIVENESS --- */
-@media (max-width: 768px) {
-    /* Force the sidebar out of the document flow and off-screen */
-    .sidebar {
-        position: fixed !important; 
-        top: 0 !important;
-        left: -100% !important; /* Hides it off the left edge */
-        width: 280px !important;
-        height: 100vh !important;
-        z-index: 1050 !important; /* Forces it above everything else */
-        display: flex !important;
-        transition: left 0.3s ease-in-out !important;
-    }
-    
-    /* When the toggle button is clicked, slide it to 0 (visible) */
-    .sidebar.show-mobile {
-        left: 0 !important; 
-        box-shadow: 4px 0 15px rgba(0,0,0,0.5) !important;
-    }
+            #accountSettingsModal {
+                width: 100vw !important;
+                padding-right: 0 !important;
+            }
 
-    /* Ensure main content takes the full screen */
-    .main-content {
-        width: 100% !important;
-        margin-left: 0 !important;
-        padding: 15px !important;
-    }
-}
+            #accountSettingsModal .modal-dialog {
+                min-height: calc(100% - 2rem);
+                margin: var(--bs-modal-margin);
+            }
+        }
+
+        .career-chat-card {
+            width: 100%;
+            max-width: none;
+            display: flex;
+            flex-direction: column;
+            height: calc(100dvh - 80px);
+            min-height: 0;
+            margin-bottom: 0 !important;
+            border: 1px solid var(--career-border);
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .career-chat-card.is-empty {
+            height: calc(100dvh - 80px);
+        }
+
+        .career-chat-card.is-empty .career-chat-messages {
+            position: absolute;
+            top: calc(50% - 68px);
+            right: 0;
+            left: 0;
+            flex: none;
+            max-height: 40%;
+            margin: 0;
+            padding-bottom: 0;
+            transform: translateY(-100%);
+        }
+
+        .career-chat-card.is-empty #careerChatControls {
+            position: absolute;
+            top: 50%;
+            right: 0;
+            left: 0;
+            width: 100%;
+            margin: 0;
+            transform: translateY(-50%);
+        }
+
+        .career-chat-card.is-empty .career-chat-message.assistant {
+            align-self: center;
+            max-width: min(96%, 720px);
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .career-chat-card,
+            .career-chat-card.is-empty {
+                height: calc(100dvh - 84px);
+            }
+        }
+
+        @media (width: 768px) {
+            .career-chat-card,
+            .career-chat-card.is-empty {
+                height: calc(100dvh - 30px);
+            }
+        }
+
+        .career-chat-header {
+            background: #fff;
+            color: var(--career-text);
+            border-bottom: 1px solid var(--career-border);
+        }
+
+        .career-chat-header .text-dark {
+            color: var(--career-text) !important;
+        }
+
+        .career-chat-header small {
+            color: var(--career-muted) !important;
+        }
+
+        .career-chat-avatar {
+            display: grid;
+            width: 42px;
+            height: 42px;
+            flex: 0 0 42px;
+            place-items: center;
+            border: 1px solid var(--career-border);
+            border-radius: 50%;
+            background: var(--career-sidebar);
+            color: var(--career-text);
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .career-chat-header .min-w-0 {
+            min-width: 0;
+        }
+
+        .career-chat-messages {
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 0;
+            gap: 14px;
+            min-height: 0;
+            margin-bottom: 8px;
+            overflow-y: auto;
+            padding: 22px;
+            background: var(--career-surface);
+        }
+
+        #careerChatMessageList {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .career-chat-message {
+            max-width: min(96%, 860px);
+            padding: 13px 16px;
+            border-radius: 16px;
+            color: #000;
+            background: transparent;
+            border: 0;
+            box-shadow: none;
+            line-height: 1.6;
+            text-shadow: none;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .career-chat-message.assistant {
+            align-self: flex-start;
+            padding-left: 4px;
+            font-size: 1.03rem;
+        }
+
+        .career-chat-message.user {
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .career-chat-suggestions {
+            align-self: flex-start;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            max-width: min(96%, 860px);
+            margin-left: 4px;
+        }
+
+        .career-chat-suggestion {
+            border: 1px solid var(--career-border);
+            border-radius: 999px;
+            padding: 7px 12px;
+            background: #fff;
+            color: var(--career-text);
+            font-size: 0.9rem;
+        }
+
+        .career-chat-suggestion:hover {
+            background: var(--career-sidebar);
+            border-color: var(--career-ink-soft);
+        }
+
+        .career-chat-result {
+            align-self: stretch;
+            max-width: 860px;
+            padding: 18px;
+            border: 1px solid var(--career-border);
+            border-radius: 16px;
+            background: #fff;
+            color: var(--career-text);
+        }
+
+        .career-chat-result-university {
+            padding: 12px 0;
+            border-top: 1px solid var(--career-border);
+        }
+
+        .career-chat-result-requirements {
+            margin-top: 10px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: var(--career-surface);
+        }
+
+        .career-chat-result-university:first-child {
+            border-top: 0;
+        }
+
+        .career-grade-summary {
+            align-self: stretch;
+            max-width: 860px;
+            padding: 18px;
+            border: 1px solid var(--career-border);
+            border-radius: 18px;
+            background: #fff;
+            box-shadow: 0 8px 24px rgba(30, 41, 59, 0.06);
+        }
+
+        .career-grade-summary-heading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+            color: var(--career-text);
+            font-weight: 700;
+        }
+
+        .career-grade-summary-heading i {
+            color: var(--career-ink);
+        }
+
+        .career-grade-metric {
+            height: 100%;
+            padding: 14px;
+            border: 1px solid var(--career-border);
+            border-radius: 14px;
+            background: #fff;
+        }
+
+        .career-grade-metric-value {
+            margin: 4px 0 0;
+            color: var(--career-ink);
+            font-size: 1.65rem;
+            font-weight: 750;
+        }
+
+        .career-grade-subjects {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
+            gap: 8px;
+            margin: 14px 0;
+        }
+
+        .career-grade-subject {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 9px 11px;
+            border: 1px solid var(--career-border);
+            border-radius: 10px;
+            background: #fff;
+            font-size: 0.88rem;
+        }
+
+        .career-grade-subject strong {
+            color: var(--career-text);
+        }
+
+        .career-chat-composer {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 7px;
+            border: 1px solid var(--career-border);
+            border-radius: 18px;
+            background: #fff;
+            box-shadow: 0 8px 24px rgba(30, 41, 59, 0.08);
+        }
+
+        .career-chat-composer textarea {
+            min-height: 48px;
+            max-height: 150px;
+            padding: 12px 10px;
+            resize: vertical;
+            border: 0;
+            box-shadow: none !important;
+        }
+
+        .career-chat-composer textarea:focus {
+            outline: 0;
+        }
+
+        #careerChatControls {
+            flex: 0 0 auto;
+        }
+
+        .career-chat-continue {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            align-self: flex-start;
+            max-width: min(96%, 860px);
+            margin: 4px 0 2px 4px;
+            padding: 12px 14px;
+            border: 1px solid var(--career-border);
+            border-radius: 14px;
+            background: #fff;
+        }
+
+        .career-chat-continue p {
+            margin: 0;
+            color: var(--career-text);
+            font-size: 0.9rem;
+        }
+
+        .career-chat-next-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .career-chat-send-button {
+            width: 46px;
+            height: 46px;
+            flex: 0 0 46px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            font-size: 1rem;
+        }
+
+        .career-chat-send-button.is-thinking {
+            width: auto;
+            flex-basis: auto;
+            gap: 8px;
+            padding: 0 12px;
+            white-space: nowrap;
+            font-size: 0.85rem;
+        }
+
+        .career-chat-send-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(30, 41, 59, 0.22);
+        }
+
+        .career-chat-choices {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 9px;
+        }
+
+        .career-chat-choice {
+            border: 1px solid var(--career-border);
+            color: var(--career-ink);
+            background: #fff;
+            border-radius: 999px;
+            padding: 9px 14px;
+            font-weight: 600;
+        }
+
+        .career-chat-choice:hover,
+        .career-chat-choice.selected {
+            color: #fff;
+            background: var(--career-ink);
+            border-color: var(--career-ink);
+        }
+
+        #summaryInterest {
+            white-space: pre-line;
+        }
+
+        @media (max-width: 576px) {
+            .main-content {
+                padding: clamp(10px, 3.5vw, 15px) !important;
+            }
+
+            .career-chat-header {
+                align-items: flex-start !important;
+                flex-wrap: wrap;
+                padding: clamp(12px, 3.8vw, 18px) !important;
+            }
+
+            .career-chat-header > div:first-child {
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+
+            #careerChatTitle {
+                font-size: clamp(0.98rem, 4vw, 1.15rem);
+                line-height: 1.3;
+                overflow-wrap: anywhere;
+            }
+
+            .career-chat-header small {
+                display: block;
+                margin-top: 4px;
+                font-size: clamp(0.72rem, 3vw, 0.82rem);
+                line-height: 1.4;
+            }
+
+            .career-chat-header > .d-flex {
+                justify-content: flex-end;
+            }
+
+            .career-chat-messages {
+                padding: clamp(10px, 3.5vw, 15px);
+            }
+
+            .career-chat-message {
+                max-width: 100%;
+                padding: 10px 12px;
+                font-size: clamp(0.88rem, 3.6vw, 0.98rem);
+                line-height: 1.55;
+                overflow-wrap: anywhere;
+            }
+
+            .career-chat-suggestions,
+            .career-chat-result,
+            .career-grade-summary,
+            .career-chat-continue {
+                max-width: 100%;
+                min-width: 0;
+            }
+
+            .career-chat-continue {
+                align-items: stretch;
+                flex-direction: column;
+                gap: 10px;
+                margin-left: 0;
+                padding: 12px;
+            }
+
+            .career-chat-continue p {
+                font-size: clamp(0.82rem, 3.4vw, 0.92rem);
+                line-height: 1.45;
+            }
+
+            .career-chat-next-actions {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(min(100%, 132px), 1fr));
+                width: 100%;
+            }
+
+            .career-chat-next-actions .btn {
+                min-height: 40px;
+                white-space: normal;
+                font-size: clamp(0.74rem, 3.1vw, 0.84rem);
+            }
+
+            .career-chat-suggestion {
+                max-width: 100%;
+                white-space: normal;
+                overflow-wrap: anywhere;
+                font-size: clamp(0.78rem, 3.2vw, 0.88rem);
+            }
+
+            .career-chat-result {
+                padding: clamp(12px, 3.8vw, 18px);
+                overflow-wrap: anywhere;
+            }
+
+            .career-chat-composer {
+                gap: 5px;
+                padding: 5px;
+                border-radius: 15px;
+            }
+
+            .career-chat-composer textarea {
+                min-width: 0;
+                min-height: 44px;
+                padding: 9px 5px;
+                font-size: clamp(0.84rem, 3.5vw, 0.96rem);
+                line-height: 1.4;
+            }
+
+            .career-chat-composer > .position-relative > button,
+            .career-chat-composer > .d-flex > button {
+                width: 40px !important;
+                height: 40px;
+                padding: 0;
+            }
+
+            .career-chat-composer > .d-flex > .career-chat-send-button.is-thinking {
+                width: auto !important;
+                padding: 0 10px;
+            }
+
+            #careerChatControls {
+                padding: 10px !important;
+            }
+
+            .career-grade-summary {
+                padding: clamp(12px, 3.8vw, 18px);
+            }
+
+            .career-grade-metric {
+                padding: 10px 6px;
+            }
+
+            .career-grade-metric small {
+                font-size: clamp(0.62rem, 2.8vw, 0.72rem);
+                line-height: 1.25;
+            }
+
+            .career-grade-subject {
+                min-width: 0;
+                padding: 8px;
+                font-size: clamp(0.72rem, 3vw, 0.84rem);
+                overflow-wrap: anywhere;
+            }
+
+            .career-chat-card,
+            .career-chat-card.is-empty {
+                height: calc(100dvh - 68px - 3vw);
+            }
+
+        }
+
     </style><link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#1e293b">
+    <meta name="theme-color" content="#0b1f3a">
 <link rel="apple-touch-icon" href="icon-192.png">
 </head>
 <body>
    
 <div id="main-app">
    <div id="main-sidebar" class="sidebar d-flex flex-column p-4 shadow-lg" style="display: none !important;">
-        <h4 class="fw-bold mb-4 text-white"><i class="fas fa-brain me-2 text-info"></i>CareerPath AI</h4>
-        
+        <div class="sidebar-brand mb-4">
+            <h4 class="fw-bold text-white"><i class="fas fa-brain me-2 text-light"></i>CareerPath AI</h4>
+            <button id="sidebar-collapse-toggle" class="btn btn-sm btn-outline-primary sidebar-brand-toggle" type="button" aria-label="Hide sidebar" title="Hide sidebar" onclick="toggleDesktopSidebar()">
+                <i class="fas fa-chevron-left" aria-hidden="true"></i>
+            </button>
+        </div>
+
       <ul class="nav flex-column mb-auto">
             <li class="nav-item">
                 <a href="#" class="nav-link active" onclick="showSection('profile', event); closeSidebarOnMobile();">
@@ -223,8 +920,15 @@
             <li class="nav-item mt-2">
                 <a href="#" class="nav-link d-flex justify-content-between align-items-center" onclick="showSection('reports', event); fetchHistory(); closeSidebarOnMobile();">
                     <span><i class="fas fa-folder-open me-3"></i>Saved Reports</span>
-                    <span class="badge bg-info rounded-pill text-dark" id="reportCountBadge">0</span>
+                    <span class="badge bg-light rounded-pill text-dark" id="reportCountBadge">0</span>
                 </a>
+            </li>
+            <li class="nav-item sidebar-conversations">
+                <button class="btn btn-primary w-100 mb-3" type="button" onclick="resetCareerChat(); closeSidebarOnMobile();">
+                    <i class="fas fa-plus me-2"></i>New chat
+                </button>
+                <label class="sidebar-conversations-label" for="careerChatHistory">Conversations</label>
+                <select id="careerChatHistory" class="form-select form-select-sm" aria-label="Saved conversations" onchange="switchCareerChat(this.value); closeSidebarOnMobile();"></select>
             </li>
         </ul>
 
@@ -232,75 +936,113 @@
             Logged in as: <strong id="sidebar-user" class="text-light"></strong><br>
             
             <div class="d-flex flex-column gap-2 mt-2">
-                <button class="btn btn-sm btn-outline-info w-100" data-bs-toggle="modal" data-bs-target="#accountSettingsModal">
+                <button class="btn btn-sm btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#accountSettingsModal">
                     <i class="fas fa-cog me-2"></i>Account Settings
                 </button>
-                <button onclick="logout()" class="btn btn-sm btn-outline-light w-100">
+                <button onclick="logout()" class="btn btn-sm btn-outline-primary w-100">
                     <i class="fas fa-sign-out-alt me-2"></i>Log Out
                 </button>
             </div>
-            <div class="mt-3 opacity-50">Powered by Gemini</div> 
         </div>
     </div>
 
+    <div id="mobile-overlay" style="display: none;" onclick="closeSidebarOnMobile()"></div>
+
  <div class="main-content" id="dashboard-content" style="display: none;">
     
-    <div class="d-flex justify-content-between align-items-center mb-4 d-md-none bg-white p-3 rounded-3 shadow-sm">
-        <h5 class="fw-bold text-dark mb-0"><i class="fas fa-brain text-info me-2"></i>CareerPath AI</h5>
-        <button class="btn btn-outline-primary border-0" onclick="toggleSidebar()">
-            <i class="fas fa-bars fa-lg"></i>
+    <div class="d-flex justify-content-start align-items-center mb-4 mobile-chat-menu">
+        <button id="sidebar-toggle" class="btn btn-outline-primary border-0" type="button" aria-label="Open navigation menu" aria-controls="main-sidebar" aria-expanded="false" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
         </button>
     </div>
     
-    <div id="mobile-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 999;" onclick="toggleSidebar()"></div>       
         <div id="profile" class="content-section active">
             
             <div id="profileFormContainer">
-                <h2 class="fw-bold mb-2 text-dark">Welcome, <span id="welcomeName" class="text-primary"></span>! 👋</h2>
-                <p class="text-secondary mb-4 fs-5">Student Profile Setup</p>
-
-                
-                <div class="card p-4 border-0 shadow-sm mb-4 rounded-4">
-                    <div class="mb-4">
-                        <label class="form-label fw-bold text-secondary">Dream Career / Detailed Interests</label>
-                        <textarea class="form-control bg-light" id="interestArea" rows="3" placeholder="e.g. I love coding, music, helping people"></textarea>
-                    </div>
-                    <hr class="my-4 text-muted">
-                    <h5 class="fw-bold text-secondary mb-3"><i class="fas fa-book-open text-primary me-2"></i> Core Subject Grades</h5>
-                    <div class="row g-3 mb-2" id="gradeInputs"></div>
-                    
-                    <div class="mb-4">
-                        <small id="subject-count-warning" class="fw-bold bg-danger-subtle text-danger px-3 py-2 rounded-3 border border-danger-subtle d-inline-block">
-                            <i class="fas fa-exclamation-circle me-1"></i> Select exactly 7 subjects (0/7 selected).
-                        </small>
-                    </div>
-
-                    <hr class="my-4 text-muted">
-
-                    <div class="row g-4 mb-5 text-center">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold text-secondary text-uppercase tracking-wide">Overall Mean Grade</label>
-                            <div class="card bg-light border-0 shadow-sm py-4 rounded-4">
-                                <h1 class="status-card-val grade-pink mb-0" id="meanGradeDisplay">-</h1>
-                                <input type="hidden" id="meanGradeLetter">
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold text-secondary text-uppercase tracking-wide">Aggregate Points</label>
-                            <div class="card bg-light border-0 shadow-sm py-4 rounded-4">
-                                <h1 class="status-card-val points-green mb-0">
-                                    <span id="aggregatePointsDisplay">0</span><span class="fs-3 text-muted">/ 84</span>
-                                </h1>
-                                <input type="hidden" id="aggregatePoints">
+                <div id="careerChatCard" class="card career-chat-card is-empty shadow-sm mb-4">
+                    <div class="career-chat-header p-3 p-md-4 d-flex align-items-center justify-content-between gap-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <span id="careerChatAvatar" class="career-chat-avatar" aria-hidden="true">C</span>
+                            <div class="min-w-0">
+                                <div id="careerChatTitle" class="fw-bold">CareerPath AI</div>
+                                <small id="careerChatContext"></small>
                             </div>
                         </div>
                     </div>
 
-                    <button id="saveProfileBtn" class="btn btn-primary py-3 fs-5 fw-bold rounded-3 w-100 shadow-sm" onclick="previewProfile()" disabled>
-                        <i class="fas fa-save me-2"></i> Save & Preview Profile
-                    </button>
+                    <div id="careerChatMessages" class="career-chat-messages" role="log" aria-live="polite" aria-relevant="additions text">
+                        <div id="careerChatMessageList"></div>
+                        <section id="careerGradeStage" class="career-grade-summary" aria-label="Grade summary" style="display: none;">
+                            <div class="career-grade-summary-heading">
+                                <i class="fas fa-chart-simple"></i>
+                                <span>Your optional grades</span>
+                            </div>
+                            <p id="careerGradeProgressNote" class="small fw-semibold text-secondary mb-3"></p>
+                            <div class="row g-2 text-center">
+                                <div class="col-6">
+                                    <div class="career-grade-metric">
+                                        <small id="careerGradeMeanLabel" class="text-secondary text-uppercase fw-bold">Mean so far</small>
+                                        <h3 class="career-grade-metric-value" id="meanGradeDisplay">-</h3>
+                                        <input type="hidden" id="meanGradeLetter">
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="career-grade-metric">
+                                        <small id="careerGradePointsLabel" class="text-secondary text-uppercase fw-bold">Points so far</small>
+                                        <h3 class="career-grade-metric-value"><span id="aggregatePointsDisplay">0</span><span class="fs-6 text-muted"> / 84</span></h3>
+                                        <input type="hidden" id="aggregatePoints">
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="careerGradeSubjectsList" class="career-grade-subjects" aria-label="Entered subject grades"></div>
+                            <button id="saveProfileBtn" class="btn btn-primary py-2 px-3 fw-bold rounded-3 shadow-sm" type="button" onclick="finishCareerGrades()">
+                                Continue with these grades <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        </section>
+                        <div id="careerChatContinuePrompt" class="career-chat-continue" style="display: none;">
+                            <p id="careerChatContinueText"></p>
+                            <div class="career-chat-next-actions">
+                                <button id="careerChatExploreButton" class="btn btn-sm btn-primary flex-shrink-0" type="button" onclick="exploreCareerOptions()">
+                                    Explore options now <i class="fas fa-arrow-right ms-1"></i>
+                                </button>
+                                <button id="careerChatContinueButton" class="btn btn-sm btn-outline-primary flex-shrink-0" type="button" onclick="continueCareerChat()">
+                                    Share grades (optional)
+                                </button>
+                            </div>
+                        </div>
+                        <div id="careerChatAttachments" class="flex-wrap gap-2 mt-2" style="display: none;"></div>
+                        <small id="careerChatAttachmentPrivacy" class="text-secondary mt-2" style="display: none;">Attachments are sent to the AI service to answer this message and are not saved to your profile. Videos must be 5 MB or smaller.</small>
+                        <small id="careerChatVoiceStatus" class="text-secondary mt-2" aria-live="polite"></small>
+                    </div>
+                    <div id="careerChatNotice" class="alert alert-warning mx-3 mx-md-4 mb-0 py-2" role="alert" style="display: none;"></div>
+
+                    <div id="careerChatControls" class="p-3 p-md-4">
+                        <div id="careerChatComposer" class="career-chat-composer">
+                            <div class="position-relative flex-shrink-0">
+                                <button id="careerChatAttachButton" class="btn btn-outline-secondary rounded-circle" type="button" aria-label="Add a document, photo, or video" aria-expanded="false" onclick="toggleCareerAttachmentMenu()" style="width: 46px; height: 46px;">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                                <div id="careerChatAttachmentMenu" class="dropdown-menu p-2" style="display: none;">
+                                    <button class="dropdown-item rounded-2" type="button" onclick="document.getElementById('careerChatDocumentInput').click()"><i class="fas fa-file-arrow-up me-2 text-primary"></i>Add a document or video</button>
+                                    <button class="dropdown-item rounded-2" type="button" onclick="document.getElementById('careerChatPhotoInput').click()"><i class="fas fa-camera me-2 text-primary"></i>Take or add a photo</button>
+                                </div>
+                                <input id="careerChatDocumentInput" type="file" accept=".pdf,application/pdf,.mp4,video/mp4,.mov,video/quicktime,.webm,video/webm" multiple hidden onchange="addCareerChatFiles(this)">
+                                <input id="careerChatPhotoInput" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" multiple hidden onchange="addCareerChatFiles(this)">
+                            </div>
+                            <textarea id="careerChatInput" class="form-control flex-grow-1" rows="2" maxlength="12000" aria-label="Message CareerPath AI" placeholder="Ask a question or tell me what you’re thinking about..."></textarea>
+                            <div class="d-flex gap-2">
+                                <button id="careerChatSkipButton" class="btn btn-outline-secondary" type="button" onclick="skipCareerChatStep()" style="display: none;">Skip</button>
+                                <button id="careerChatVoiceButton" class="btn btn-outline-secondary" type="button" aria-label="Start voice input" title="Use voice input" onclick="startCareerVoiceInput()" style="width: 46px;">
+                                    <i class="fas fa-microphone"></i>
+                                </button>
+                                <button id="careerChatSendButton" class="btn btn-primary career-chat-send-button" type="button" aria-label="Send message" title="Send message" onclick="submitCareerChatAnswer()">
+                                    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                <textarea id="interestArea" aria-hidden="true" tabindex="-1" style="display: none;"></textarea>
             </div>
 
             <div id="profileSummaryContainer" style="display: none;">
@@ -309,8 +1051,8 @@
                 
                 <div class="card p-5 border-0 shadow-sm mb-4 rounded-4 bg-white">
                     
-<h6 class="fw-bold text-secondary mb-3 text-uppercase tracking-wide" style="font-size: 0.85rem;"><i class="fas fa-bullseye text-warning me-2"></i> Career Interests</h6>
-                    <div class="p-4 rounded-4 mb-5 shadow-sm" style="background-color: #f8fafc; border-left: 5px solid #4f46e5;">
+<h6 class="fw-bold text-secondary mb-3 text-uppercase tracking-wide" style="font-size: 0.85rem;"><i class="fas fa-bullseye text-primary me-2"></i> Career Interests</h6>
+                    <div class="p-4 rounded-4 mb-5 shadow-sm" style="background-color: #f8fafc; border-left: 5px solid var(--career-ink);">
                         <p class="mb-0" id="summaryInterest" style="line-height: 1.75; font-size: 1.15rem; font-family: 'Georgia', serif; color: #334155; font-style: italic;"></p>
                     </div>
                     <div class="row g-4 mb-5">
@@ -318,7 +1060,7 @@
                             <div class="card bg-primary-subtle border-0 shadow-sm p-4 rounded-4 h-100 d-flex flex-row align-items-center justify-content-between transition-hover">
                                 <div>
                                     <h5 class="fw-bold text-primary mb-1">Mean Grade</h5>
-                                    <p class="text-primary opacity-75 mb-0 small">Calculated from 7 subjects</p>
+                                    <p class="text-primary opacity-75 mb-0 small">Calculated from your best 7 grades</p>
                                 </div>
                                 <h1 class="display-2 fw-bold text-primary mb-0" style="font-family: 'Poppins', sans-serif;" id="summaryMeanGrade">-</h1>
                             </div>
@@ -334,7 +1076,7 @@
                         </div>
                     </div>
 
-                    <h6 class="fw-bold text-secondary mb-4 text-uppercase tracking-wide border-bottom pb-2" style="font-size: 0.85rem;"><i class="fas fa-list-check text-info me-2"></i> Locked Subjects</h6>
+                    <h6 class="fw-bold text-secondary mb-4 text-uppercase tracking-wide border-bottom pb-2" style="font-size: 0.85rem;"><i class="fas fa-list-check text-primary me-2"></i> Locked Subjects</h6>
                     <div class="row g-3 mb-5" id="summarySubjectsList"></div>
 
                     <div class="d-flex flex-column flex-md-row justify-content-center gap-3 mt-4 pt-4 border-top">
@@ -374,7 +1116,7 @@
             <div id="aiLoader" class="text-center py-5 mt-5" style="display:none;">
                 <div class="spinner-border text-primary mb-4" style="width: 3rem; height: 3rem;"></div>
                 <h2 class="fw-bold">Analyzing Your Career Path...</h2>
-                <p class="text-secondary">Matching grades with university requirements. You can navigate away, this will run in the background!</p>
+                <p class="text-secondary">Exploring study options and entry requirements. You can navigate away; this will run in the background.</p>
             </div>
             
             <div id="resultsContainer" style="display:none;">
@@ -389,7 +1131,7 @@
                     </div>
                 </div>
 
-                <div id="matchReasonBox" class="p-4 mb-4 shadow-sm reason-box" style="display:none; background-color: #f0fdf4; border-left: 5px solid #10b981; border-radius: 12px;">
+                <div id="matchReasonBox" class="p-4 mb-4 shadow-sm reason-box" style="display:none;">
                     <h6 class="fw-bold mb-3 text-success text-uppercase" style="letter-spacing: 0.5px; font-size: 0.85rem;"><i class="fas fa-bullseye me-2"></i>Why this fits your passion</h6>
                     <p class="mb-0" id="matchReasonText" style="line-height: 1.75; font-size: 1.15rem; font-family: 'Georgia', serif; color: #334155; font-style: italic;"></p>
                 </div>
@@ -418,7 +1160,7 @@
                     </div>
                 </div>
 
-                <h4 class="fw-bold text-dark mb-3"><i class="fas fa-university me-2 text-primary"></i>Verified University Pathways</h4>
+                <h4 class="fw-bold text-dark mb-3"><i class="fas fa-university me-2 text-primary"></i>University Course Pathways</h4>
                 <div class="row mb-5" id="resultsList"></div>
 
                 <div class="mt-4 border-top pt-4">
@@ -473,13 +1215,17 @@
 </div>
 
 <div class="modal fade" id="accountSettingsModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content text-dark">
             <div class="modal-header border-0 pb-0">
                 <h5 class="modal-title fw-bold"><i class="fas fa-cog me-2"></i>Account Settings</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label small fw-bold" for="settingsAccountEmail">Account Email</label>
+                    <input type="email" id="settingsAccountEmail" class="form-control" placeholder="name@example.com" autocomplete="email" required>
+                </div>
                 <hr class="text-muted mb-4">
                 <label class="form-label small fw-bold">Change Username</label>
                 <div class="input-group">
@@ -498,7 +1244,7 @@
                         <i class="fas fa-eye position-absolute top-50 end-0 translate-middle-y me-3 text-muted" id="eyeIconNew" style="cursor: pointer; z-index: 1050; pointer-events: auto;" onclick="toggleVisibility('newPw', 'eyeIconNew')"></i>
                     </div>
                 </div>
-                <button class="btn btn-outline-primary w-100 mt-2" onclick="updatePassword()">Update Password</button>
+                <button id="updatePasswordButton" class="btn btn-outline-primary w-100 mt-2" onclick="updatePassword()">Update Password</button>
             
                 <div class="mb-2 mt-4">
                     <label class="form-label small fw-bold text-danger">Danger Zone</label>
@@ -542,11 +1288,25 @@
     let currentResults = null;
     let globalReports = []; 
     let currentViewedReport = null;
+    let careerChatState = null;
+    let careerChatAttachments = [];
+    let careerSpeechRecognition = null;
     
-    const subjectsList = [
-        "Math", "English", "Kiswahili", "Biology", "Physics", 
-        "Chemistry", "History", "CRE", "Geography", "Business", 
-        "Agriculture", "Music", "Computer Studies", "Home Science"
+    const careerGradeSubjects = [
+        { key: "Math", label: "Maths" },
+        { key: "English", label: "English" },
+        { key: "Kiswahili", label: "Kiswahili" },
+        { key: "Biology", label: "Biology" },
+        { key: "Physics", label: "Physics" },
+        { key: "Chemistry", label: "Chemistry" },
+        { key: "History", label: "History" },
+        { key: "CRE", label: "CRE" },
+        { key: "Geography", label: "Geography" },
+        { key: "Business", label: "Business" },
+        { key: "Agriculture", label: "Agriculture" },
+        { key: "Music", label: "Music" },
+        { key: "ComputerStudies", label: "Computer Studies" },
+        { key: "HomeScience", label: "Home Science" }
     ];
     
     const gradesMap = {
@@ -559,7 +1319,6 @@
         7: "C+", 6: "C", 5: "C-", 4: "D+", 3: "D", 2: "D-", 1: "E" 
     };
     
-    const gradesList = Object.keys(gradesMap);
 window.onload = () => {
         // 1. Check if they are logged in
         const savedUser = localStorage.getItem('user_name');
@@ -575,146 +1334,1098 @@ window.onload = () => {
 
         // 3. Load the rest of the user data
         currentUser = savedUser;
+        const savedEmail = localStorage.getItem('user_email') || '';
+        document.getElementById('settingsAccountEmail').value = savedEmail;
+        document.getElementById('accountSettingsModal').addEventListener('show.bs.modal', () => {
+            document.getElementById('settingsAccountEmail').value = localStorage.getItem('user_email') || '';
+        });
         document.getElementById("sidebar-user").innerText = currentUser;
-        document.getElementById("welcomeName").innerText = currentUser;
-        
-        generateSubjectInputs();
+        initializeCareerChat();
+        updateTotalPoints();
+        document.getElementById('careerChatInput').addEventListener('keydown', event => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                submitCareerChatAnswer();
+            }
+        });
+        document.getElementById('careerChatInput').addEventListener('input', event => {
+            careerChatState.draft = event.target.value;
+            saveCareerChat();
+        });
         updateSidebarBadgeOnly();
         loadSavedProfile(); 
         showSection('profile'); 
     };
 
-    function generateSubjectInputs() {
-        const container = document.getElementById('gradeInputs');
-        container.innerHTML = "";
-        
-        subjectsList.forEach(sub => {
-            let options = `<option value="">-</option>`;
-            gradesList.forEach(g => {
-                options += `<option value="${g}">${g} (${gradesMap[g]} Pts)</option>`;
-            });
-            
-            container.innerHTML += `
-                <div class="col-6 col-md-3 col-lg-2 mb-3">
-                    <label class="form-label small fw-bold text-muted mb-1">${sub}</label>
-                    <select class="form-select form-select-sm bg-light grade-select" id="grade-${sub.replace(/\s+/g, '')}" onchange="updateTotalPoints()"> 
-                        ${options}
-                    </select>
-                </div>`;
-        });
-    }
-
     function updateTotalPoints() {
-        const selects = document.querySelectorAll('.grade-select');
-        let total = 0;
-        let count = 0;
-        
-        selects.forEach(select => {
-            if (select.value && gradesMap[select.value]) { 
-                total += gradesMap[select.value]; 
-                count++; 
-            }
-        });
-        // Toggles the sidebar open and closed on mobile
-function toggleSidebar() {
-    const sidebar = document.querySelector('.sidebar');
-    const overlay = document.getElementById('mobile-overlay');
-    
-    sidebar.classList.toggle('show-mobile');
-    
-    // Show or hide the dark background overlay
-    if (sidebar.classList.contains('show-mobile')) {
-        overlay.style.display = 'block';
-    } else {
-        overlay.style.display = 'none';
-    }
-}
-
-// Automatically close the sidebar when a user clicks a link on mobile
-function closeSidebarOnMobile() {
-    if (window.innerWidth <= 768) {
-        document.querySelector('.sidebar').classList.remove('show-mobile');
-        document.getElementById('mobile-overlay').style.display = 'none';
-    }
-}
-        
+        const grades = careerChatState?.answers?.grades || {};
+        const gradeValues = Object.values(grades)
+            .filter(grade => Object.prototype.hasOwnProperty.call(gradesMap, grade))
+            .map(grade => gradesMap[grade])
+            .sort((left, right) => right - left);
+        const count = gradeValues.length;
+        const bestSeven = gradeValues.slice(0, 7);
+        const total = bestSeven.reduce((sum, points) => sum + points, 0);
         document.getElementById('aggregatePointsDisplay').innerText = total;
         document.getElementById('aggregatePoints').value = total;
 
         const meanDisplay = document.getElementById('meanGradeDisplay');
         const meanHidden = document.getElementById('meanGradeLetter');
-        const warning = document.getElementById('subject-count-warning');
         const saveBtn = document.getElementById('saveProfileBtn');
+        document.getElementById('careerGradeMeanLabel').textContent =
+            count >= 7 ? "Best 7 mean" : "Mean so far";
+        document.getElementById('careerGradePointsLabel').textContent =
+            count >= 7 ? "Best 7 points" : "Points so far";
 
-        if (count > 0) {
-            const average = total / count;
+        if (bestSeven.length > 0) {
+            const average = total / bestSeven.length;
             const roundedPoints = Math.ceil(average); 
             const letter = reverseGradesMap[roundedPoints] || "E";
-            meanDisplay.innerHTML = `${letter} <span class="fs-6 text-muted fw-normal">(${average.toFixed(2)})</span>`;
+            meanDisplay.innerHTML = `${letter} <span class="fs-6 text-muted fw-normal">(${average.toFixed(2)} / 12 pts)</span>`;
             meanHidden.value = letter;
         } else {
             meanDisplay.innerText = "-";
             meanHidden.value = "";
         }
 
-        if (count === 7) {
-            warning.className = "fw-bold bg-success-subtle text-success px-3 py-2 rounded-3 border border-success-subtle d-inline-block";
-            warning.innerHTML = `<i class="fas fa-check-circle me-1"></i> 7/7 Subjects Selected. Ready!`;
-            saveBtn.disabled = false;
-        } else {
-            warning.className = "fw-bold bg-danger-subtle text-danger px-3 py-2 rounded-3 border border-danger-subtle d-inline-block";
-            warning.innerHTML = `<i class="fas fa-exclamation-circle me-1"></i> Select exactly 7 subjects (${count}/7 selected).`;
-            saveBtn.disabled = true;
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = count
+            ? `Continue with ${count} grade${count === 1 ? "" : "s"} <i class="fas fa-arrow-right ms-2"></i>`
+            : `Continue without grades <i class="fas fa-arrow-right ms-2"></i>`;
+        const subjectsList = document.getElementById('careerGradeSubjectsList');
+        if (subjectsList) {
+            subjectsList.replaceChildren();
+            careerGradeSubjects.forEach(subject => {
+                if (!Object.prototype.hasOwnProperty.call(grades, subject.key)) return;
+                const item = document.createElement('div');
+                item.className = "career-grade-subject";
+                const label = document.createElement('span');
+                label.textContent = subject.label;
+                const value = document.createElement('strong');
+                value.textContent = grades[subject.key];
+                item.append(label, value);
+                subjectsList.appendChild(item);
+            });
+        }
+        const note = document.getElementById('careerGradeProgressNote');
+        if (note) {
+            const nextSubject = careerGradeSubjects[careerChatState?.gradeIndex || 0];
+            note.textContent = count
+                ? `${count} grade${count === 1 ? "" : "s"} entered. You can continue with these now or add more subjects.`
+                : "Grades are optional. Continue without them, or add any subjects you have taken.";
         }
     }
 
-    function previewProfile() {
-        const interest = document.getElementById('interestArea').value.trim();
-        const points = document.getElementById('aggregatePoints').value;
-        const meanGrade = document.getElementById('meanGradeLetter').value;
-        const selects = document.querySelectorAll('.grade-select');
-        
-        let count = 0;
-        const subjects = {};
-        selects.forEach(s => {
-            if (s.value) { 
-                count++; 
-                subjects[s.id.replace('grade-', '')] = s.value; 
+    function newCareerChatState() {
+        return {
+            id: window.crypto?.randomUUID
+                ? window.crypto.randomUUID()
+                : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+            step: 0,
+            gradeIndex: 0,
+            askedGradeIndex: -1,
+            completed: false,
+            assistantName: "CareerPath AI",
+            awaitingAssistantName: true,
+            answers: {
+                interest: "",
+                motivation: "",
+                priorities: [],
+                preferredLevel: "",
+                constraints: "",
+                grades: {}
+            },
+            draft: "",
+            messages: []
+        };
+    }
+
+    function careerChatWelcomeMessage() {
+        return {
+            role: "assistant",
+            text: `Hi ${currentUser}, I’m CareerPath AI, your guide to courses and careers. You can give me a name, or we can get straight to any question, interest, or goal. Grades are optional—you can explore your choices and entry requirements without them.`
+        };
+    }
+
+    function initializeCareerChat() {
+        const key = `${currentUser}_career_chat`;
+        const welcomeBackKey = `${currentUser}_career_chat_welcomed_back`;
+        try {
+            const saved = JSON.parse(localStorage.getItem(key) || "null");
+            if (saved && saved.answers && Array.isArray(saved.messages)) {
+                careerChatState = restoreCareerChatState(saved);
+            } else {
+                const conversations = readSavedCareerChats();
+                careerChatState = conversations.length
+                    ? restoreCareerChatState(conversations[0].state)
+                    : newCareerChatState();
             }
-        });
-
-        if (count !== 7) return alert("Please select exactly 7 subjects!");
-        if (!interest) return alert("Please fill in your Dream Career / Detailed Interests!");
-
-        const profileData = { interest, points, meanGrade, subjects };
-        localStorage.setItem(`${currentUser}_saved_profile`, JSON.stringify(profileData));
-
-        document.getElementById('summaryInterest').innerHTML = `"<i class="fas fa-quote-left opacity-25 me-2"></i>${interest}<i class="fas fa-quote-right opacity-25 ms-2"></i>"`;
-        document.getElementById('summaryMeanGrade').innerText = meanGrade;
-        document.getElementById('summaryPoints').innerText = points;
-
-        const summarySubjectsList = document.getElementById('summarySubjectsList');
-        summarySubjectsList.innerHTML = "";
-        
-        for (const [sub, grade] of Object.entries(subjects)) {
-            summarySubjectsList.innerHTML += `
-                <div class="col-md-3 col-sm-4 col-6">
-                    <div class="card bg-white border border-light-subtle shadow-sm py-3 px-3 rounded-4 text-center h-100">
-                        <small class="text-secondary fw-bold text-uppercase d-block text-truncate mb-2" style="font-size: 0.7rem; letter-spacing: 0.5px;">${sub}</small>
-                        <span class="fs-3 fw-bold text-dark" style="font-family: 'Poppins', sans-serif;">${grade}</span>
-                    </div>
-                </div>
-            `;
+        } catch (error) {
+            console.error("Could not restore the saved course-fit conversation.", error);
+            careerChatState = newCareerChatState();
         }
 
-        document.getElementById('profileFormContainer').style.display = 'none';
-        document.getElementById('profileSummaryContainer').style.display = 'block';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (!careerChatState.messages.length) {
+            careerChatState.messages.push(careerChatWelcomeMessage());
+            careerChatState.awaitingAssistantName = true;
+        } else if (
+            careerChatState.messages.some(message => message.role === "user")
+            && sessionStorage.getItem(welcomeBackKey) !== "true"
+        ) {
+            careerChatState.messages.push({
+                role: "assistant",
+                text: `Welcome back, ${currentUser}. Ready to pick up where we left off?`
+            });
+            saveCareerChat();
+        }
+        sessionStorage.setItem(welcomeBackKey, "true");
+        renderCareerChat();
+        renderCareerChatHistory();
+    }
+
+    function restoreCareerChatState(saved) {
+        const freshState = newCareerChatState();
+        const wasCompleted = saved.completed || saved.step === 6;
+        const messages = saved.messages.filter(message =>
+            message && (message.role === "assistant" || message.role === "user")
+            && typeof message.text === "string"
+        ).map(message => ({
+            role: message.role,
+            text: message.text,
+            ...(Array.isArray(message.suggestions) ? { suggestions: message.suggestions } : {}),
+            ...(message.result && typeof message.result === "object" ? { result: message.result } : {})
+        }));
+        if (
+            messages[0]?.role === "assistant"
+            && /^Hi .*?(?:I(?:’m|'m) CareerPath AI\b|ask me anything about careers|I(?:’m|'m) your guide to Kenyan careers and courses)/i.test(messages[0].text)
+            && !messages.some(message => message.role === "user")
+        ) {
+            messages[0] = careerChatWelcomeMessage();
+        }
+        return {
+            ...freshState,
+            ...saved,
+            id: typeof saved.id === "string" ? saved.id : freshState.id,
+            assistantName: typeof saved.assistantName === "string" ? saved.assistantName : "CareerPath AI",
+            awaitingAssistantName: typeof saved.awaitingAssistantName === "boolean"
+                ? saved.awaitingAssistantName
+                : !messages.some(message => message.role === "user"),
+            step: wasCompleted ? 0 : saved.step === 5 ? 5 : 0,
+            completed: false,
+            pending: false,
+            gradeIndex: Number.isInteger(saved.gradeIndex)
+                ? Math.min(Math.max(saved.gradeIndex, 0), careerGradeSubjects.length)
+                : 0,
+            askedGradeIndex: -1,
+            answers: {
+                ...freshState.answers,
+                ...saved.answers,
+                interest: typeof saved.answers.interest === "string" ? saved.answers.interest : "",
+                motivation: typeof saved.answers.motivation === "string" ? saved.answers.motivation : "",
+                priorities: Array.isArray(saved.answers.priorities) ? saved.answers.priorities : [],
+                preferredLevel: typeof saved.answers.preferredLevel === "string"
+                    ? saved.answers.preferredLevel
+                    : "",
+                constraints: typeof saved.answers.constraints === "string" ? saved.answers.constraints : "",
+                grades: saved.answers.grades && typeof saved.answers.grades === "object"
+                    ? saved.answers.grades
+                    : {}
+            },
+            draft: typeof saved.draft === "string" ? saved.draft : "",
+            messages
+        };
+    }
+
+    function readSavedCareerChats() {
+        try {
+            const saved = JSON.parse(localStorage.getItem(`${currentUser}_career_chats`) || "[]");
+            return Array.isArray(saved) ? saved.filter(item =>
+                item && typeof item.id === "string" && item.state && Array.isArray(item.state.messages)
+            ) : [];
+        } catch (error) {
+            console.error("Could not read saved conversations.", error);
+            return [];
+        }
+    }
+
+    function getCareerChatTitle(state) {
+        const firstMessage = state.messages.find(message =>
+            message.role === "user" && !/^(?:Maths|English|Kiswahili|Biology|Physics|Chemistry|History|CRE|Geography|Business|Agriculture|Music|Computer Studies|Home Science):\s/.test(message.text)
+        );
+        if (!firstMessage) return "Previous chats";
+        const title = firstMessage.text.replace(/\s+/g, " ").trim();
+        return title.length > 42 ? `${title.slice(0, 39)}…` : title;
+    }
+
+    function renderCareerChatHistory() {
+        const select = document.getElementById('careerChatHistory');
+        if (!select) return;
+        const conversations = readSavedCareerChats();
+        if (careerChatState && !conversations.some(item => item.id === careerChatState.id)) {
+            conversations.unshift({
+                id: careerChatState.id,
+                title: getCareerChatTitle(careerChatState),
+                state: careerChatState
+            });
+        }
+        select.replaceChildren();
+        conversations.forEach(conversation => {
+            const option = document.createElement('option');
+            option.value = conversation.id;
+            option.textContent = conversation.title || "Saved conversation";
+            select.appendChild(option);
+        });
+        select.value = careerChatState?.id || "";
+        select.style.display = conversations.length ? "block" : "none";
+    }
+
+    function renderCareerRecommendationCard(container, result) {
+        const card = document.createElement('section');
+        card.className = "career-chat-result";
+        const title = document.createElement('h5');
+        title.className = "fw-bold mb-2";
+        title.textContent = "Course and university matches";
+        card.appendChild(title);
+
+        const courseName = typeof result.course === "string" ? result.course : "Course options";
+        const course = document.createElement('p');
+        course.className = "mb-2";
+        const courseLabel = document.createElement('strong');
+        courseLabel.textContent = courseName;
+        course.append(courseLabel);
+        if (result.points !== undefined && result.points !== null && result.points !== "") {
+            course.append(document.createTextNode(` · ${result.points}/84 points`));
+        }
+        card.appendChild(course);
+
+        const universities = Array.isArray(result.universities) ? result.universities : [];
+        if (!universities.length) {
+            const empty = document.createElement('p');
+            empty.className = "small text-secondary mb-0";
+            empty.textContent = "No specific university matches were returned.";
+            card.appendChild(empty);
+        }
+        universities.forEach(university => {
+            const item = document.createElement('div');
+            item.className = "career-chat-result-university";
+            const name = document.createElement('strong');
+            name.textContent = typeof university.name === "string" ? university.name : "Institution";
+            item.appendChild(name);
+            if (typeof university.reason === "string" && university.reason.trim()) {
+                const reason = document.createElement('p');
+                reason.className = "small text-secondary mb-1";
+                reason.textContent = university.reason;
+                item.appendChild(reason);
+            }
+            const requirements = Array.isArray(university.requirements) ? university.requirements : [];
+            if (requirements.length) {
+                const requirementSection = document.createElement('div');
+                requirementSection.className = "career-chat-result-requirements";
+                const hasGradesToCompare = requirements.some(requirement =>
+                    requirement.status && requirement.status !== "Not checked"
+                );
+                const heading = document.createElement('strong');
+                heading.className = "small d-block mb-2";
+                heading.textContent = hasGradesToCompare
+                    ? "Entry requirements (compared where possible)"
+                    : "Typical entry requirements (eligibility not checked)";
+                requirementSection.appendChild(heading);
+                requirements.forEach(requirement => {
+                    const row = document.createElement('p');
+                    row.className = "small mb-1";
+                    const subject = typeof requirement.subject === "string" ? requirement.subject : "Entry requirement";
+                    const required = typeof requirement.required === "string" ? requirement.required : "Check official course page";
+                    const attained = typeof requirement.attained === "string" ? requirement.attained : "Not provided";
+                    const status = requirement.status === "Not checked" || attained === "Not provided"
+                        ? "Not shared"
+                        : `${attained}${requirement.status === "Met" ? " · met" : ""}`;
+                    row.textContent = `${subject}: usually ${required} · Your grade: ${status}`;
+                    requirementSection.appendChild(row);
+                });
+                item.appendChild(requirementSection);
+            }
+            if (
+                university.verified === true
+                && typeof university.url === "string"
+                && /^https:\/\/[^\s]+$/i.test(university.url)
+            ) {
+                try {
+                    const link = document.createElement('a');
+                    const url = new URL(university.url);
+                    if (url.protocol === "https:") {
+                        link.href = url.href;
+                        link.target = "_blank";
+                        link.rel = "noopener noreferrer";
+                        link.textContent = "Open verified official course page";
+                        item.appendChild(link);
+                    }
+                } catch (error) {
+                    console.warn("An invalid official course URL was excluded from the conversation result.");
+                }
+            } else {
+                const unverified = document.createElement('p');
+                unverified.className = "small text-secondary mb-0";
+                unverified.textContent = "Official course page not verified";
+                item.appendChild(unverified);
+            }
+            card.appendChild(item);
+        });
+        container.appendChild(card);
+    }
+
+    function addCareerRecommendationToChat(result) {
+        const universities = Array.isArray(result.universities) ? result.universities : [];
+        const savedResult = {
+            course: typeof result.specific_course === "string" ? result.specific_course : "",
+            points: result.validated_points ?? result.points,
+            universities: universities.slice(0, 8).map(university => ({
+                name: typeof university.name === "string" ? university.name : "Institution",
+                reason: typeof university.reason === "string" ? university.reason : "",
+                requirements: Array.isArray(university.requirements_met)
+                    ? university.requirements_met.map(requirement => ({
+                        subject: typeof requirement.subject === "string" ? requirement.subject : "",
+                        required: typeof requirement.required === "string" ? requirement.required : "",
+                        attained: typeof requirement.attained === "string" ? requirement.attained : "",
+                        status: typeof requirement.status === "string" ? requirement.status : ""
+                    }))
+                    : [],
+                verified: university.verified_offering === true,
+                url: university.verified_offering === true
+                    && typeof university.website_url === "string"
+                    && /^https:\/\/[^\s]+$/i.test(university.website_url)
+                    ? university.website_url
+                    : ""
+            }))
+        };
+        careerChatState.messages.push({
+            role: "assistant",
+            text: `I’ve added your course and institution matches to our conversation, ${currentUser}. Course: ${savedResult.course || "Course options"}. Institutions: ${savedResult.universities.map(university => university.name).join(", ") || "No specific matches"}. Only backend-verified official course pages are linked below.`,
+            result: savedResult
+        });
+        careerChatState.step = 0;
+        careerChatState.completed = false;
+        saveCareerChat();
+        document.getElementById('profileSummaryContainer').style.display = "none";
+        document.getElementById('profileFormContainer').style.display = "block";
+        showSection('profile');
+        renderCareerChat();
+    }
+
+    function saveCareerChat() {
+        if (!careerChatState || !currentUser) return;
+        careerChatState.messages = careerChatState.messages.slice(-50);
+        careerChatState.updatedAt = Date.now();
+        try {
+            localStorage.setItem(`${currentUser}_career_chat`, JSON.stringify(careerChatState));
+            const conversations = readSavedCareerChats().filter(item => item.id !== careerChatState.id);
+            if (careerChatState.messages.some(message => message.role === "user")) {
+                conversations.unshift({
+                    id: careerChatState.id,
+                    title: getCareerChatTitle(careerChatState),
+                    updatedAt: careerChatState.updatedAt,
+                    state: careerChatState
+                });
+            }
+            localStorage.setItem(`${currentUser}_career_chats`, JSON.stringify(conversations.slice(0, 10)));
+            renderCareerChatHistory();
+        } catch (error) {
+            console.error("Could not save this conversation in browser storage.", error);
+            showCareerChatNotice("This conversation could not be saved in this browser. Check available storage space.");
+        }
+    }
+
+    function switchCareerChat(conversationId) {
+        if (!conversationId || conversationId === careerChatState?.id) return;
+        const conversation = readSavedCareerChats().find(item => item.id === conversationId);
+        if (!conversation) {
+            showCareerChatNotice("That saved conversation is no longer available.");
+            renderCareerChatHistory();
+            return;
+        }
+        saveCareerChat();
+        careerChatState = restoreCareerChatState(conversation.state);
+        careerChatAttachments = [];
+        localStorage.setItem(`${currentUser}_career_chat`, JSON.stringify(careerChatState));
+        document.getElementById('profileSummaryContainer').style.display = "none";
+        document.getElementById('profileFormContainer').style.display = "block";
+        renderCareerChat();
+        renderCareerChatHistory();
+    }
+
+    function currentCareerQuestion() {
+        const subject = careerGradeSubjects[careerChatState.gradeIndex];
+        return subject
+            ? `What grade did you get in ${subject.label}? Type a grade such as A, B+, C, or E. Skip this subject if you did not take it.`
+            : "";
+    }
+
+    function renderCareerChat() {
+        if (!careerChatState) return;
+        const messageLog = document.getElementById('careerChatMessages');
+        const messages = document.getElementById('careerChatMessageList');
+        const composer = document.getElementById('careerChatComposer');
+        const gradeStage = document.getElementById('careerGradeStage');
+        const input = document.getElementById('careerChatInput');
+        const notice = document.getElementById('careerChatNotice');
+        if (!messageLog || !messages) return;
+
+        const step = careerChatState.step;
+        const gradeIndex = careerChatState.gradeIndex;
+        const chatCard = document.getElementById('careerChatCard');
+        const isNewConversation = step === 0 && careerChatState.messages.length <= 1;
+        const title = document.getElementById('careerChatTitle');
+        const assistantName = careerChatState.assistantName || "CareerPath AI";
+        if (title) {
+            title.textContent = assistantName;
+        }
+        document.getElementById('careerChatAvatar').textContent = Array.from(assistantName.trim())[0] || "C";
+        document.getElementById('careerChatContext').textContent =
+            `${currentUser} · Grades optional · Conversations saved on this device`;
+        chatCard.classList.toggle("is-empty", isNewConversation);
+        if (
+            step === 5
+            && gradeIndex < careerGradeSubjects.length
+            && careerChatState.askedGradeIndex !== gradeIndex
+        ) {
+            const gradeQuestion = currentCareerQuestion();
+            const lastMessage = careerChatState.messages[careerChatState.messages.length - 1];
+            const alreadyAsked = lastMessage?.role === "assistant" && lastMessage.text === gradeQuestion;
+            if (!alreadyAsked) {
+                careerChatState.messages.push({
+                    role: "assistant",
+                    text: gradeQuestion
+                });
+            }
+            careerChatState.askedGradeIndex = gradeIndex;
+            saveCareerChat();
+        }
+
+        messages.replaceChildren();
+        careerChatState.messages.forEach((message, index) => {
+            const bubble = document.createElement('div');
+            bubble.className = `career-chat-message ${message.role === "user" ? "user" : "assistant"}`;
+            bubble.textContent = message.text;
+            messages.appendChild(bubble);
+            if (message.role === "assistant" && message.result) {
+                renderCareerRecommendationCard(messages, message.result);
+            }
+            if (
+                message.role === "assistant"
+                && index === careerChatState.messages.length - 1
+                && Array.isArray(message.suggestions)
+                && message.suggestions.length
+            ) {
+                const suggestionList = document.createElement('div');
+                suggestionList.className = "career-chat-suggestions";
+                suggestionList.setAttribute('aria-label', "Optional next steps");
+                message.suggestions.slice(0, 4).forEach(suggestion => {
+                    if (typeof suggestion !== "string" || !suggestion.trim()) return;
+                    const button = document.createElement('button');
+                    button.type = "button";
+                    button.className = "career-chat-suggestion";
+                    button.textContent = suggestion;
+                    button.addEventListener('click', () => {
+                        if (/^enter grades$/i.test(suggestion.trim())) {
+                            beginCareerGrades();
+                            return;
+                        }
+                        const input = document.getElementById('careerChatInput');
+                        input.value = suggestion;
+                        careerChatState.draft = suggestion;
+                        saveCareerChat();
+                        input.focus();
+                    });
+                    suggestionList.appendChild(button);
+                });
+                if (suggestionList.childElementCount) messages.appendChild(suggestionList);
+            }
+        });
+        messageLog.scrollTop = messageLog.scrollHeight;
+
+        const isGradeStep = step === 5;
+        const noMoreSubjects = isGradeStep && gradeIndex >= careerGradeSubjects.length;
+        const gradeCount = Object.keys(careerChatState.answers.grades).length;
+        composer.style.display = step === 0 || (isGradeStep && !noMoreSubjects) ? "flex" : "none";
+        gradeStage.style.display = isGradeStep || gradeCount > 0 ? "block" : "none";
+        const skipButton = document.getElementById('careerChatSkipButton');
+        skipButton.style.display = isGradeStep && !noMoreSubjects ? "inline-block" : "none";
+        skipButton.textContent = isGradeStep ? "Skip subject" : "Skip";
+        if (document.activeElement !== input) input.value = careerChatState.draft || "";
+        input.maxLength = isGradeStep ? 5 : 12000;
+        const sendButton = document.getElementById('careerChatSendButton');
+        const isThinking = Boolean(careerChatState.pending);
+        const sendActionLabel = isThinking
+            ? "CareerPath AI is thinking"
+            : isGradeStep
+                ? "Add grade"
+                : "Send message";
+        sendButton.replaceChildren();
+        const sendIcon = document.createElement('i');
+        sendIcon.className = isThinking ? "fas fa-spinner fa-spin" : "fas fa-arrow-up";
+        sendIcon.setAttribute('aria-hidden', "true");
+        sendButton.appendChild(sendIcon);
+        if (isThinking) {
+            const thinkingLabel = document.createElement('span');
+            thinkingLabel.textContent = "Thinking…";
+            sendButton.appendChild(thinkingLabel);
+        }
+        sendButton.classList.toggle("is-thinking", isThinking);
+        sendButton.disabled = isThinking;
+        sendButton.setAttribute('aria-label', sendActionLabel);
+        sendButton.title = sendActionLabel;
+        input.placeholder = careerChatState.awaitingAssistantName
+            ? "Give me a name or ask me anything..."
+            : isGradeStep
+                ? "Type a grade, such as B+"
+                : "Ask a question or tell me what you’re thinking about...";
+        input.setAttribute(
+            'aria-label',
+            careerChatState.awaitingAssistantName
+                ? "Message or name your AI guide"
+                : `Message ${careerChatState.assistantName || "CareerPath AI"}`
+        );
+        document.getElementById('careerChatVoiceButton').style.display = isGradeStep ? "none" : "inline-block";
+        document.getElementById('careerChatAttachButton').style.display = isGradeStep ? "none" : "inline-block";
+        const continuePrompt = document.getElementById('careerChatContinuePrompt');
+        const shouldOfferGrades = step === 0
+            && Boolean(careerChatState.answers.interest)
+            && gradeCount < 7;
+        continuePrompt.style.display = shouldOfferGrades ? "flex" : "none";
+        document.getElementById('careerChatContinueButton').textContent = "Share grades (optional)";
+        document.getElementById('careerChatContinueText').textContent = shouldOfferGrades
+            ? "If you have exam grades, share them to check your eligibility. Or explore courses and their entry requirements now."
+            : "";
+        document.getElementById('careerChatExploreButton').style.display = shouldOfferGrades ? "inline-block" : "none";
+        document.getElementById('careerChatContinueButton').style.display = shouldOfferGrades ? "inline-block" : "none";
+        document.getElementById('careerChatContinueButton').disabled = Boolean(careerChatState.pending);
+        const hasSavedProfile = Boolean(localStorage.getItem(`${currentUser}_saved_profile`));
+        const gradeActionButton = document.getElementById('saveProfileBtn');
+        if (isGradeStep) {
+            gradeActionButton.style.display = "inline-block";
+            gradeActionButton.onclick = finishCareerGrades;
+        } else if (hasSavedProfile && careerChatState.answers.interest) {
+            gradeActionButton.style.display = "inline-block";
+            gradeActionButton.textContent = "Find course matches";
+            gradeActionButton.onclick = getRecommendations;
+        } else {
+            gradeActionButton.style.display = "none";
+        }
+        notice.style.display = "none";
+        renderCareerChatAttachments();
+
+        updateTotalPoints();
+        messageLog.scrollTop = messageLog.scrollHeight;
+    }
+
+    function renderCareerChatAttachments() {
+        const container = document.getElementById('careerChatAttachments');
+        const privacyNote = document.getElementById('careerChatAttachmentPrivacy');
+        container.replaceChildren();
+        container.style.display = careerChatAttachments.length ? "flex" : "none";
+        privacyNote.style.display = careerChatAttachments.length ? "block" : "none";
+        careerChatAttachments.forEach((file, index) => {
+            const chip = document.createElement('span');
+            chip.className = "badge rounded-pill text-bg-light border text-dark d-inline-flex align-items-center gap-2 p-2";
+            chip.append(document.createTextNode(file.name));
+            const remove = document.createElement('button');
+            remove.type = "button";
+            remove.className = "btn-close";
+            remove.setAttribute('aria-label', `Remove ${file.name}`);
+            remove.addEventListener('click', () => {
+                careerChatAttachments.splice(index, 1);
+                renderCareerChatAttachments();
+            });
+            chip.appendChild(remove);
+            container.appendChild(chip);
+        });
+    }
+
+    function showCareerChatNotice(message) {
+        const notice = document.getElementById('careerChatNotice');
+        notice.textContent = message;
+        notice.style.display = "block";
+    }
+
+    function getCareerChatMessages() {
+        const selected = [];
+        let totalCharacters = 0;
+        for (const message of [...careerChatState.messages].reverse()) {
+            if (selected.length >= 24 || totalCharacters + message.text.length > 24000) break;
+            selected.push({ role: message.role, content: message.text });
+            totalCharacters += message.text.length;
+        }
+        return selected.reverse();
+    }
+
+    function getCareerAssistantName(message) {
+        let name = message.trim();
+        const namedPattern = /^(?:please\s+)?(?:call me|call you|call yourself|you can call me|i(?:['’]d| would) like to call you|i want to call you|i(?:['’]d| would) like to name you|i want to name you|my name for you is|your name is)\s+(.+)$/i;
+        const match = name.match(namedPattern);
+        if (match) {
+            name = match[1]
+                .split(/[,!?;]|\.\s+(?=(?:i|we|you|my|please|can|could|want|need|am|would|what|how|where|when|who)\b)/i, 1)[0]
+                .split(/\s+(?=(?:and|but|because|while|also|then)\s+(?:i|we|you|my|please|can|could|want|need|am|would|talk|explore|learn|study|discuss|ask|help|find|see|know|understand|share)\b)/i, 1)[0]
+                .trim();
+        } else if (/\s/.test(name) || /[.!?]/.test(name)) {
+            return "";
+        }
+        name = name.replace(/[.!?]+$/, "").trim();
+        return /^[\p{L}\p{N}][\p{L}\p{N} .'-]{0,31}$/u.test(name) ? name : "";
+    }
+
+    async function submitCareerChatAnswer() {
+        if (careerChatState.pending) return;
+        const input = document.getElementById('careerChatInput');
+        const value = input.value.trim();
+        const step = careerChatState.step;
+        if (step === 5) {
+            submitCareerGrade(value);
+            return;
+        }
+        if (!value && !careerChatAttachments.length) {
+            showCareerChatNotice("Write a message or add a document/photo before sending.");
+            return;
+        }
+
+        const attachmentNames = careerChatAttachments.map(file => file.name);
+        const messageText = value || `Please review the attached ${attachmentNames.join(", ")}.`;
+        const submittedAttachments = [...careerChatAttachments];
+        const wasAwaitingAssistantName = careerChatState.awaitingAssistantName;
+        if (!careerChatState.messages.some(message => message.role === "user")) {
+            careerChatState.messages = careerChatState.messages.filter(message =>
+                message.role !== "assistant" || !/^Hi .*?what would you like to call me\?/i.test(message.text)
+            );
+        }
+        careerChatState.draft = "";
+        careerChatState.messages.push({
+            role: "user",
+            text: messageText
+        });
+        const isNameRequest = /\b(call you|give (?:you|me) a name|name you|what should i call you|rename you)\b/i.test(value);
+        const isStartingAction = /^(discover interests|courses & universities|enter grades|give me a name|name you|help me discover my interests|explore courses and universities|start with my grades|i.?d like to give you a name)$/i.test(value);
+        let choseAssistantName = false;
+        const chosenName = getCareerAssistantName(value);
+        let nameHasAdditionalDetails = false;
+        if (chosenName) {
+            careerChatState.assistantName = chosenName;
+            choseAssistantName = true;
+            const nameEnd = value.toLowerCase().lastIndexOf(chosenName.toLowerCase()) + chosenName.length;
+            nameHasAdditionalDetails = Boolean(
+                value.slice(nameEnd).replace(/^[\s,.!?;]+/, "").trim()
+            );
+        }
+        if (wasAwaitingAssistantName) {
+            careerChatState.awaitingAssistantName = isNameRequest && !choseAssistantName;
+        } else if (isNameRequest && !choseAssistantName) {
+            careerChatState.awaitingAssistantName = true;
+        } else if (choseAssistantName) {
+            careerChatState.awaitingAssistantName = false;
+        }
+        if (
+            value
+            && !careerChatState.answers.interest
+            && (!isNameRequest || (choseAssistantName && nameHasAdditionalDetails))
+            && !careerChatState.awaitingAssistantName
+            && !isStartingAction
+        ) {
+            careerChatState.answers.interest = value;
+        }
+        careerChatState.pending = true;
+        saveCareerChat();
+        renderCareerChat();
+        input.value = "";
+        input.disabled = true;
+        document.getElementById('careerChatNotice').style.display = "none";
+        document.getElementById('careerChatSendButton').disabled = true;
+        document.getElementById('careerChatVoiceButton').disabled = true;
+        document.getElementById('careerChatAttachButton').disabled = true;
+        document.getElementById('careerChatVoiceStatus').textContent = "Thinking…";
+        const thinking = document.createElement('div');
+        thinking.className = "career-chat-message assistant";
+        thinking.textContent = "Let me think about that…";
+        thinking.setAttribute('aria-label', "CareerPath AI is responding");
+        const messageLog = document.getElementById('careerChatMessages');
+        document.getElementById('careerChatMessageList').appendChild(thinking);
+        messageLog.scrollTop = messageLog.scrollHeight;
+
+        let failureMessage = "";
+        try {
+            let response;
+            if (submittedAttachments.length) {
+                const formData = new FormData();
+                formData.append("messages", JSON.stringify(getCareerChatMessages()));
+                formData.append("assistant_name", careerChatState.assistantName || "CareerPath AI");
+                submittedAttachments.forEach(file => formData.append("attachments", file));
+                response = await fetch(`${API_URL}/chat`, { method: "POST", body: formData });
+            } else {
+                response = await fetch(`${API_URL}/chat`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        messages: getCareerChatMessages(),
+                        assistant_name: careerChatState.assistantName || "CareerPath AI"
+                    })
+                });
+            }
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data.error || "I couldn't send that message. Please try again.");
+            if (
+                typeof data.reply !== "string"
+                || !data.reply.trim()
+                || !Array.isArray(data.suggestions)
+                || !data.suggestions.length
+            ) {
+                throw new Error("The AI chat service returned an incomplete reply. Please try again.");
+            }
+            if (typeof data.assistant_name === "string" && data.assistant_name.trim()) {
+                if (data.assistant_name.trim() !== careerChatState.assistantName) {
+                    careerChatState.awaitingAssistantName = false;
+                }
+                careerChatState.assistantName = data.assistant_name.trim();
+            }
+            careerChatState.messages.push({
+                role: "assistant",
+                text: data.reply.trim(),
+                suggestions: data.suggestions.filter(item => typeof item === "string").slice(0, 4)
+            });
+            careerChatAttachments = [];
+            document.getElementById('careerChatDocumentInput').value = "";
+            document.getElementById('careerChatPhotoInput').value = "";
+            saveCareerChat();
+            if (
+                careerChatState.answers.interest
+                && Object.keys(careerChatState.answers.grades).length >= 7
+            ) {
+                previewProfile();
+            }
+        } catch (error) {
+            careerChatState.messages.pop();
+            careerChatState.draft = value;
+            saveCareerChat();
+            failureMessage = error.message || "I couldn't connect to the AI chat service. Please try again.";
+        } finally {
+            careerChatState.pending = false;
+            input.disabled = false;
+            document.getElementById('careerChatVoiceStatus').textContent = "";
+            document.getElementById('careerChatSendButton').disabled = false;
+            document.getElementById('careerChatVoiceButton').disabled = false;
+            document.getElementById('careerChatAttachButton').disabled = false;
+            renderCareerChat();
+            if (failureMessage) showCareerChatNotice(failureMessage);
+            if (!careerChatAttachments.length) input.focus();
+        }
+    }
+
+    function skipCareerChatStep() {
+        if (careerChatState.step === 5) {
+            submitCareerGrade("", true);
+        }
+    }
+
+    function beginCareerGrades() {
+        careerChatState.step = 5;
+        careerChatState.gradeIndex = careerGradeSubjects.findIndex(subject =>
+            !Object.prototype.hasOwnProperty.call(careerChatState.answers.grades, subject.key)
+        );
+        if (careerChatState.gradeIndex < 0) careerChatState.gradeIndex = careerGradeSubjects.length;
+        careerChatState.askedGradeIndex = -1;
+        careerChatState.completed = false;
+        careerChatState.messages.push({
+            role: "assistant",
+            text: "Absolutely. Let’s add your grades one at a time. We can talk about your interests or explore courses and universities whenever you’re ready."
+        });
+        saveCareerChat();
+        renderCareerChat();
+        document.getElementById('careerChatInput').focus();
+    }
+
+    function exploreCareerOptions() {
+        if (!careerChatState.answers.interest.trim()) {
+            showCareerChatNotice("Tell me what course, career, or subject you’d like to explore first. Grades are optional.");
+            return;
+        }
+        previewProfile();
+        getRecommendations();
+    }
+
+    function continueCareerChat() {
+        beginCareerGrades();
+    }
+
+    function toggleCareerAttachmentMenu() {
+        const menu = document.getElementById('careerChatAttachmentMenu');
+        const opening = menu.style.display === "none";
+        menu.style.display = opening ? "block" : "none";
+        document.getElementById('careerChatAttachButton').setAttribute('aria-expanded', String(opening));
+    }
+
+    function addCareerChatFiles(input) {
+        const allowedTypes = new Set([
+            "application/pdf", "image/jpeg", "image/png", "image/webp",
+            "video/mp4", "video/quicktime", "video/webm"
+        ]);
+        for (const file of input.files) {
+            if (careerChatAttachments.length >= 3) {
+                showCareerChatNotice("You can attach up to three documents, photos, or videos to one message.");
+                break;
+            }
+            if (!allowedTypes.has(file.type)) {
+                showCareerChatNotice("Add a PDF, JPEG/PNG/WebP photo, or MP4/MOV/WebM video.");
+                continue;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                showCareerChatNotice(`${file.name} is too large. Each attachment must be 5 MB or smaller.`);
+                continue;
+            }
+            careerChatAttachments.push(file);
+        }
+        input.value = "";
+        document.getElementById('careerChatAttachmentMenu').style.display = "none";
+        document.getElementById('careerChatAttachButton').setAttribute('aria-expanded', "false");
+        renderCareerChatAttachments();
+    }
+
+    function startCareerVoiceInput() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            showCareerChatNotice("Voice input is not supported in this browser. You can still type your message.");
+            return;
+        }
+        if (careerSpeechRecognition) {
+            careerSpeechRecognition.stop();
+            return;
+        }
+
+        const input = document.getElementById('careerChatInput');
+        const startingText = input.value ? `${input.value.trim()} ` : "";
+        const recognition = new SpeechRecognition();
+        careerSpeechRecognition = recognition;
+        recognition.lang = "en-KE";
+        recognition.interimResults = true;
+        recognition.continuous = false;
+        recognition.onresult = event => {
+            const spokenText = Array.from(event.results)
+                .map(result => result[0].transcript)
+                .join("");
+            input.value = `${startingText}${spokenText}`.trimStart();
+            careerChatState.draft = input.value;
+            saveCareerChat();
+        };
+        recognition.onerror = event => {
+            const messages = {
+                "not-allowed": "Allow microphone access in your browser to use voice input.",
+                "service-not-allowed": "The browser speech service is unavailable. You can type your message instead.",
+                "no-speech": "I didn't hear anything. Try again or type your message."
+            };
+            if (messages[event.error]) showCareerChatNotice(messages[event.error]);
+        };
+        recognition.onend = () => {
+            careerSpeechRecognition = null;
+            document.getElementById('careerChatVoiceButton').classList.remove("btn-danger", "text-white");
+            document.getElementById('careerChatVoiceButton').classList.add("btn-outline-secondary");
+            document.getElementById('careerChatVoiceButton').setAttribute('aria-label', "Start voice input");
+            document.getElementById('careerChatVoiceStatus').textContent = "";
+        };
+        try {
+            recognition.start();
+            document.getElementById('careerChatVoiceButton').classList.remove("btn-outline-secondary");
+            document.getElementById('careerChatVoiceButton').classList.add("btn-danger", "text-white");
+            document.getElementById('careerChatVoiceButton').setAttribute('aria-label', "Stop voice input");
+            document.getElementById('careerChatVoiceStatus').textContent = "Listening… Your words will appear here for review.";
+        } catch (error) {
+            careerSpeechRecognition = null;
+            showCareerChatNotice("Voice input could not start. Check microphone permissions or type your message instead.");
+        }
+    }
+
+    function submitCareerGrade(value, skip = false) {
+        const subject = careerGradeSubjects[careerChatState.gradeIndex];
+        if (!subject) {
+            showCareerChatNotice("There are no more subjects to enter. Finish with at least seven grades.");
+            return;
+        }
+
+        const grade = value.toUpperCase().replace(/\s+/g, "").replace(/PLUS/g, "+").replace(/MINUS/g, "-");
+        if (!skip && !Object.prototype.hasOwnProperty.call(gradesMap, grade)) {
+            showCareerChatNotice("Enter a grade such as A, B+, C, or E, or skip a subject you did not take.");
+            return;
+        }
+
+        if (skip) {
+            delete careerChatState.answers.grades[subject.key];
+            careerChatState.messages.push({
+                role: "user",
+                text: `I did not take ${subject.label}.`
+            });
+        } else {
+            careerChatState.answers.grades[subject.key] = grade;
+            careerChatState.messages.push({
+                role: "user",
+                text: `${subject.label}: ${grade}`
+            });
+        }
+        careerChatState.gradeIndex += 1;
+        careerChatState.askedGradeIndex = -1;
+        careerChatState.draft = "";
+        updateTotalPoints();
+        saveCareerChat();
+        renderCareerChat();
+
+        if (careerChatState.gradeIndex >= careerGradeSubjects.length) {
+            const count = Object.keys(careerChatState.answers.grades).length;
+            if (count < 7) {
+                showCareerChatNotice(`You entered ${count} grades. You can continue with these or proceed without adding more.`);
+            }
+        } else {
+            document.getElementById('careerChatInput').focus();
+        }
+    }
+
+    function finishCareerGrades() {
+        updateTotalPoints();
+        const grades = careerChatState.answers.grades;
+        const count = Object.keys(grades).length;
+
+        careerChatState.messages.push({
+            role: "user",
+            text: count
+                ? `I’m ready to continue with the ${count} subject grade${count === 1 ? "" : "s"} I have.`
+                : "I don’t have grades to share right now. Let’s continue without them."
+        });
+        const hasInterest = Boolean(careerChatState.answers.interest.trim());
+        careerChatState.messages.push({
+            role: "assistant",
+            text: count
+                ? `Thanks. I’ll use the grades you shared to compare course requirements where possible. Any requirements for subjects you haven’t shared will stay unconfirmed. You can add or update grades later.`
+                : `No problem—grades are optional. I can still explore courses, institutions, and the entry requirements you may need. What would you like to look into?`,
+            ...(!hasInterest ? { suggestions: [
+                "Explore courses and universities",
+                "Ask about a course",
+                "Help me discover my interests"
+            ] } : {})
+        });
+        careerChatState.step = 0;
+        careerChatState.completed = false;
+        careerChatState.draft = "";
+        saveCareerChat();
+        if (hasInterest) {
+            previewProfile();
+            getRecommendations();
+        } else {
+            renderCareerChat();
+        }
+    }
+
+    function resetCareerChat() {
+        if (careerSpeechRecognition) careerSpeechRecognition.stop();
+        saveCareerChat();
+        localStorage.removeItem(`${currentUser}_saved_profile`);
+        careerChatState = newCareerChatState();
+        careerChatAttachments = [];
+        document.getElementById('profileSummaryContainer').style.display = "none";
+        document.getElementById('profileFormContainer').style.display = "block";
+        document.getElementById('interestArea').value = "";
+        updateTotalPoints();
+        careerChatState.messages.push(careerChatWelcomeMessage());
+        saveCareerChat();
+        renderCareerChat();
+        document.getElementById('careerChatInput').focus();
+    }
+
+    function previewProfile() {
+        const answers = careerChatState && careerChatState.answers;
+        const interest = (answers?.interest || document.getElementById('interestArea').value).trim();
+        updateTotalPoints();
+        const points = document.getElementById('aggregatePoints').value;
+        const meanGrade = document.getElementById('meanGradeLetter').value;
+        const subjects = answers?.grades ? { ...answers.grades } : {};
+        const count = Object.keys(subjects).length;
+
+        if (!interest) {
+            showCareerChatNotice("Tell me what course, career, or subject you’d like to explore. Grades are optional.");
+            return;
+        }
+
+        const conversationContext = answers ? {
+            motivation: answers.motivation || "",
+            priorities: Array.isArray(answers.priorities) ? answers.priorities : [],
+            preferred_level: answers.preferredLevel === "Not sure yet" ? "" : answers.preferredLevel || "",
+            constraints: answers.constraints || "",
+            chat_history: careerChatState.messages
+                .filter(message => message.role === "user")
+                .map(message => message.text)
+                .filter(text => !/^(?:Maths|English|Kiswahili|Biology|Physics|Chemistry|History|CRE|Geography|Business|Agriculture|Music|Computer Studies|Home Science):\s/.test(text))
+                .filter(text => !/^I did not take /.test(text))
+                .join("\n")
+                .slice(-6000)
+        } : {};
+        const profileData = {
+            interest,
+            conversationContext,
+            points: count ? points : "",
+            meanGrade: count ? meanGrade : "",
+            subjects,
+            conversationId: careerChatState?.id || ""
+        };
+        localStorage.setItem(`${currentUser}_saved_profile`, JSON.stringify(profileData));
+
+        const summaryLines = [`Interests: ${interest}`];
+        if (conversationContext.motivation) summaryLines.push(`What appeals: ${conversationContext.motivation}`);
+        if (conversationContext.priorities.length) summaryLines.push(`Work priorities: ${conversationContext.priorities.join(", ")}`);
+        if (conversationContext.preferred_level) summaryLines.push(`Preferred study level: ${conversationContext.preferred_level}`);
+        if (conversationContext.constraints) summaryLines.push(`Practical preferences: ${conversationContext.constraints}`);
+        if (conversationContext.chat_history) summaryLines.push(`Conversation notes: ${conversationContext.chat_history.slice(0, 1200)}`);
+        document.getElementById('summaryInterest').textContent = summaryLines.join("\n");
+        document.getElementById('summaryMeanGrade').innerText = meanGrade || "Not provided";
+        document.getElementById('summaryPoints').innerText = count ? points : "Not provided";
+
+        const summarySubjectsList = document.getElementById('summarySubjectsList');
+        summarySubjectsList.replaceChildren();
+        for (const [sub, grade] of Object.entries(subjects)) {
+            const column = document.createElement('div');
+            column.className = "col-md-3 col-sm-4 col-6";
+            const card = document.createElement('div');
+            card.className = "card bg-white border border-light-subtle shadow-sm py-3 px-3 rounded-4 text-center h-100";
+            const subjectLabel = document.createElement('small');
+            subjectLabel.className = "text-secondary fw-bold text-uppercase d-block text-truncate mb-2";
+            subjectLabel.style.fontSize = "0.7rem";
+            subjectLabel.style.letterSpacing = "0.5px";
+            subjectLabel.textContent = careerGradeSubjects.find(item => item.key === sub)?.label || sub;
+            const gradeLabel = document.createElement('span');
+            gradeLabel.className = "fs-3 fw-bold text-dark";
+            gradeLabel.style.fontFamily = "'Poppins', sans-serif";
+            gradeLabel.textContent = grade;
+            card.append(subjectLabel, gradeLabel);
+            column.appendChild(card);
+            summarySubjectsList.appendChild(column);
+        }
+
+        careerChatState.step = 0;
+        careerChatState.completed = false;
+        document.getElementById('profileFormContainer').style.display = 'block';
+        document.getElementById('profileSummaryContainer').style.display = 'none';
+        renderCareerChat();
     }
 
     function editProfile() {
         document.getElementById('profileSummaryContainer').style.display = 'none';
         document.getElementById('profileFormContainer').style.display = 'block';
+        if (careerChatState && careerChatState.answers.interest) {
+            careerChatState.step = 5;
+            careerChatState.gradeIndex = careerGradeSubjects.findIndex(subject =>
+                !Object.prototype.hasOwnProperty.call(careerChatState.answers.grades, subject.key)
+            );
+            if (careerChatState.gradeIndex < 0) careerChatState.gradeIndex = careerGradeSubjects.length;
+            careerChatState.askedGradeIndex = -1;
+            careerChatState.answers.grades = {};
+            careerChatState.completed = false;
+            careerChatState.messages.push({
+                role: "assistant",
+                text: "Let's update your academic profile. I’ll ask for your grades one subject at a time."
+            });
+            saveCareerChat();
+            renderCareerChat();
+        }
     }
 
     function loadSavedProfile() {
@@ -722,10 +2433,27 @@ function closeSidebarOnMobile() {
         if (saved) {
             try {
                 const profileData = JSON.parse(saved);
+                if (
+                    profileData.conversationId
+                    && profileData.conversationId !== careerChatState?.id
+                ) {
+                    document.getElementById('profileSummaryContainer').style.display = 'none';
+                    document.getElementById('profileFormContainer').style.display = 'block';
+                    return;
+                }
                 document.getElementById('interestArea').value = profileData.interest;
-                for (const [sub, grade] of Object.entries(profileData.subjects)) {
-                    const select = document.getElementById(`grade-${sub}`);
-                    if (select) select.value = grade;
+                if (careerChatState) {
+                    careerChatState.answers.interest = profileData.interest || "";
+                    careerChatState.answers.grades = profileData.subjects || {};
+                    if (profileData.conversationContext) {
+                        careerChatState.answers.motivation = profileData.conversationContext.motivation || "";
+                        careerChatState.answers.priorities = profileData.conversationContext.priorities || [];
+                        careerChatState.answers.preferredLevel = profileData.conversationContext.preferred_level || "";
+                        careerChatState.answers.constraints = profileData.conversationContext.constraints || "";
+                    }
+                    careerChatState.step = 6;
+                    careerChatState.completed = true;
+                    saveCareerChat();
                 }
                 updateTotalPoints();
                 previewProfile(); 
@@ -764,6 +2492,7 @@ function closeSidebarOnMobile() {
 
     function logout() { 
         localStorage.removeItem('user_name'); 
+        localStorage.removeItem('user_email');
         window.location.href = "login.html"; 
     }
 
@@ -782,21 +2511,22 @@ function closeSidebarOnMobile() {
     };
     
     async function updateUsername() {
+        const email = document.getElementById('settingsAccountEmail').value.trim().toLowerCase();
         const newName = document.getElementById('settingsNewUsername').value.trim();
+        if (!email) return alert("Please enter your account email.");
         if (!newName) return alert("Please enter a new username");
         
         try {
             const response = await fetch(`${API_URL}/change-username`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ oldUsername: currentUser, newUsername: newName })
+                body: JSON.stringify({ email, newUsername: newName })
             });
             const data = await response.json();
             if (response.ok) {
                 currentUser = data.newUsername;
                 localStorage.setItem('user_name', currentUser);
                 document.getElementById("sidebar-user").innerText = currentUser;
-                document.getElementById("welcomeName").innerText = currentUser;
                 alert(data.message);
                 bootstrap.Modal.getInstance(document.getElementById('accountSettingsModal')).hide();
             } else { 
@@ -808,16 +2538,18 @@ function closeSidebarOnMobile() {
     }
 
     async function updatePassword() {
+        const email = document.getElementById('settingsAccountEmail').value.trim().toLowerCase();
         const oldPassword = document.getElementById('oldPw').value;
         const newPassword = document.getElementById('newPw').value;
         
+        if (!email) return alert("Please enter your account email.");
         if(!oldPassword || !newPassword) return alert("Please fill in both password fields.");
         
         try {
             const response = await fetch(`${API_URL}/change-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: currentUser, oldPassword: oldPassword, newPassword: newPassword })
+                body: JSON.stringify({ email, oldPassword, newPassword })
             });
             const data = await response.json();
             alert(data.message);
@@ -832,6 +2564,8 @@ function closeSidebarOnMobile() {
     }
 
     async function deleteAccount() {
+        const email = document.getElementById('settingsAccountEmail').value.trim().toLowerCase();
+        if (!email) return alert("Please enter your account email.");
         const isConfirmed = confirm(`Warning: This will permanently delete the account for ${currentUser}. This action cannot be undone. Proceed?`);
         if (!isConfirmed) return;
         
@@ -839,7 +2573,7 @@ function closeSidebarOnMobile() {
             const response = await fetch(`${API_URL}/delete-account`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: currentUser })
+                body: JSON.stringify({ email })
             });
             const data = await response.json();
             if (response.ok) { 
@@ -973,7 +2707,7 @@ function closeSidebarOnMobile() {
             wordList.push([bw, Math.floor(Math.random() * 10 * dpr) + (15 * dpr)]); 
         });
 
-        const vibrantColors = ['#4f46e5', '#7c3aed', '#f59e0b', '#10b981', '#f43f5e', '#0ea5e9', '#1e293b'];
+        const vibrantColors = ['#0b1f3a', '#122b4d', '#1e3a5f', '#314967', '#49617d', '#70839a'];
 
         // 2. DE-SYNC REFLOW: Wait for DOM animations to finish to prevent "Forced Reflow" warning
         requestAnimationFrame(() => {
@@ -1012,44 +2746,56 @@ function closeSidebarOnMobile() {
             unis.forEach(uni => {
                 let reqHtml = "";
                 if(uni.requirements_met && uni.requirements_met.length > 0) {
+                    const hasGradesToCompare = uni.requirements_met.some(req =>
+                        req.status && req.status !== "Not checked"
+                    );
                     reqHtml = `
                         <div class="mt-3 p-2 bg-light rounded border">
-                            <small class="fw-bold text-dark d-block mb-1"><i class="fas fa-check-circle text-success me-1"></i> Requirements Checked:</small>
+                            <small class="fw-bold text-dark d-block mb-1"><i class="fas fa-list-check text-primary me-1"></i> ${hasGradesToCompare ? "Entry requirements (compared where possible)" : "Typical entry requirements (not checked against grades)"}:</small>
+                            <div class="table-responsive">
                             <table class="table table-sm table-borderless mb-0" style="font-size: 0.8rem;">
-                                <thead class="text-muted border-bottom"><tr><th>Subject</th><th>Required</th><th>Yours</th></tr></thead>
+                                <thead class="text-muted border-bottom"><tr><th>Subject</th><th>Usually needed</th><th>Your grade</th></tr></thead>
                                 <tbody>`;
                     
                    uni.requirements_met.forEach(req => { 
+    const attainedGrade = req.attained || "Not provided";
+    const status = req.status || (attainedGrade === "Not provided" ? "Not checked" : "Met");
+    const statusClass = status === "Met" ? "text-success" : status === "Not checked" ? "text-muted" : "text-warning";
+    const statusIcon = status === "Met" ? "fa-check" : status === "Not checked" ? "fa-minus" : "fa-circle-exclamation";
     reqHtml += `<tr>
         <td class="py-1">${req.subject}</td>
         <td class="py-1"><span class="badge bg-secondary">${req.required}</span></td>
-        <td class="py-1"><span class="fw-bold text-success"><i class="fas fa-check"></i> Met</span></td>
+        <td class="py-1"><span class="fw-bold ${statusClass}"><i class="fas ${statusIcon}"></i> ${status === "Not checked" ? "Not shared" : attainedGrade}</span></td>
     </tr>`; 
 });
-                    reqHtml += `</tbody></table></div>`;
+                    reqHtml += `</tbody></table></div></div>`;
                 }
 
-                const courseName = uni.specific_course || uni.course || uni.course_name;
+                const courseName = uni.specific_course || uni.course || uni.course_name || "Course details";
                 let exactCourseUrl = uni.website_url;
-                
-                if (!exactCourseUrl || exactCourseUrl === '#' || exactCourseUrl.trim() === '') {
-                    const searchQuery = `${uni.name} ${courseName} admission requirements site:ac.ke`;
-                    exactCourseUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
-                }
+                let hasVerifiedCoursePage = uni.verified_offering === true
+                    && typeof exactCourseUrl === "string"
+                    && exactCourseUrl.startsWith("https://");
+
+                const linkLabel = hasVerifiedCoursePage
+                    ? "View Verified Course Page"
+                    : "Official Course Page Not Verified";
+                const cardContent = `
+                    <div class="card uni-card h-100 p-4">
+                        <h5 class="fw-bold text-dark mb-2">${uni.name}</h5>
+                        <h6 class="text-primary fw-bold mb-3 border-bottom pb-3"><i class="fas fa-graduation-cap me-2"></i>${courseName}</h6>
+                        <p class="text-muted small mb-0 mt-2"><strong>Why it fits:</strong> ${uni.reason}</p>
+                        ${reqHtml}
+                        <div class="mt-3 text-end small ${hasVerifiedCoursePage ? "text-primary" : "text-muted"} fw-bold">
+                            <i class="fas ${hasVerifiedCoursePage ? "fa-external-link-alt" : "fa-circle-exclamation"} me-1"></i> ${linkLabel}
+                        </div>
+                    </div>`;
 
                 container.innerHTML += `
                     <div class="col-md-6 col-xl-4 mb-4">
-                        <a href="${exactCourseUrl}" target="_blank" class="text-decoration-none text-dark d-block h-100">
-                            <div class="card uni-card h-100 p-4">
-                                <h5 class="fw-bold text-dark mb-2">${uni.name}</h5>
-                                <h6 class="text-primary fw-bold mb-3 border-bottom pb-3"><i class="fas fa-graduation-cap me-2"></i>${courseName}</h6>
-                                <p class="text-muted small mb-0 mt-2"><strong>Why it fits:</strong> ${uni.reason}</p>
-                                ${reqHtml}
-                                <div class="mt-3 text-end small text-primary fw-bold">
-                                    <i class="fas fa-external-link-alt me-1"></i> View Course Page
-                                </div>
-                            </div>
-                        </a>
+                        ${hasVerifiedCoursePage
+                            ? `<a href="${exactCourseUrl}" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-dark d-block h-100">${cardContent}</a>`
+                            : `<div class="text-dark h-100">${cardContent}</div>`}
                     </div>`;
             });
         } else { 
@@ -1082,14 +2828,22 @@ function closeSidebarOnMobile() {
     async function getRecommendations() {
         // 1. Get the profile data
         const savedProfile = localStorage.getItem(`${currentUser}_saved_profile`);
-        if (!savedProfile) return alert("Please complete your profile setup first.");
+        if (!savedProfile) {
+            showSection('profile');
+            document.getElementById('profileSummaryContainer').style.display = "none";
+            document.getElementById('profileFormContainer').style.display = "block";
+            showCareerChatNotice("We can begin with your interests, questions, or grades. When you’re ready, I’ll use your grades to check course eligibility.");
+            return;
+        }
         const profileData = JSON.parse(savedProfile);
         
         const userData = {
             name: currentUser,
             interest: profileData.interest,
             grades: profileData.subjects,
-            points: profileData.points
+            points: profileData.points,
+            conversation_context: profileData.conversationContext || {},
+            preferred_level: profileData.conversationContext?.preferred_level || ""
         };
 
         // 2. Prepare the UI
@@ -1102,12 +2856,12 @@ function closeSidebarOnMobile() {
 
         document.getElementById('aiLoader').innerHTML = `
             <div class="spinner-border text-primary mb-4" style="width: 3rem; height: 3rem;"></div>
-            <h2 class="fw-bold">Analyzing Your Career Path...</h2>
-            <p class="text-secondary">Matching grades with university requirements. Please wait...</p>
+            <h2 class="fw-bold">Exploring Your Study Options...</h2>
+            <p class="text-secondary">Finding relevant courses, study pathways, and entry requirements. Grades are optional.</p>
         `;
 try {
             console.group("🚀 Recommendation Process Trace");
-            console.log("%cStep 1: Sending Grades to Backend...", "color: #3498db; font-weight: bold;");
+            console.log("%cStep 1: Sending course interests and available grades...", "color: #3498db; font-weight: bold;");
             
             // NOTE: Change API_URL to BACKEND_URL if that's what your code uses
             const response = await fetch(`${API_URL}/recommend`, {
@@ -1126,10 +2880,13 @@ try {
             const data = await response.json();
             
             // CHECKPOINT 2: Math Engine Check
-            if (data.points === undefined) {
+            if (data.validated_points == null && Object.keys(userData.grades || {}).length < 7) {
+                console.info("No complete grade profile was provided; course eligibility will remain unconfirmed.");
+            } else if (data.points === undefined && data.validated_points === undefined) {
                 console.warn("⚠️ FAILURE AT STEP 3: Math Engine returned no points.");
             } else {
-                console.log(`%c✅ Step 3: Math Engine Success (${data.points}/84)`, "color: #27ae60;");
+                const points = data.validated_points ?? data.points;
+                console.log(`%c✅ Step 3: Math Engine Success (${points}/84)`, "color: #27ae60;");
             }
 
             // CHECKPOINT 3: Scraper/University Link Check
@@ -1168,6 +2925,7 @@ if (!data.alternative_careers || data.alternative_careers.length === 0) {
             if (typeof saveReportToHistory === "function") {
                 saveReportToHistory(data);
             }
+            addCareerRecommendationToChat(data);
 
         } catch (error) {
             console.groupEnd(); // Ensure group closes on error
@@ -1191,8 +2949,11 @@ if (!data.alternative_careers || data.alternative_careers.length === 0) {
         
         const points = document.getElementById('aggregatePoints').value;
         const meanGrade = document.getElementById('meanGradeLetter').value;
-        const subjects = JSON.parse(localStorage.getItem(`${currentUser}_saved_profile`)).subjects;
-        localStorage.setItem(`${currentUser}_saved_profile`, JSON.stringify({ interest: originalInterestArea.value, points, meanGrade, subjects }));
+        const profileData = JSON.parse(localStorage.getItem(`${currentUser}_saved_profile`));
+        profileData.interest = originalInterestArea.value;
+        profileData.points = points;
+        profileData.meanGrade = meanGrade;
+        localStorage.setItem(`${currentUser}_saved_profile`, JSON.stringify(profileData));
         
         getRecommendations();
     }
@@ -1211,8 +2972,11 @@ if (!data.alternative_careers || data.alternative_careers.length === 0) {
         
         const points = document.getElementById('aggregatePoints').value;
         const meanGrade = document.getElementById('meanGradeLetter').value;
-        const subjects = JSON.parse(localStorage.getItem(`${currentUser}_saved_profile`)).subjects;
-        localStorage.setItem(`${currentUser}_saved_profile`, JSON.stringify({ interest: originalInterestArea.value, points, meanGrade, subjects }));
+        const profileData = JSON.parse(localStorage.getItem(`${currentUser}_saved_profile`));
+        profileData.interest = originalInterestArea.value;
+        profileData.points = points;
+        profileData.meanGrade = meanGrade;
+        localStorage.setItem(`${currentUser}_saved_profile`, JSON.stringify(profileData));
         
         getRecommendations();
     }
@@ -1288,7 +3052,7 @@ if (!data.alternative_careers || data.alternative_careers.length === 0) {
         let reasonHtml = "";
         if (data.interest_match_reason) {
             reasonHtml = `
-                <div class="p-4 mb-4 mt-3 shadow-sm" style="background-color: #f0fdf4; border-left: 5px solid #10b981; border-radius: 12px;">
+                <div class="p-4 mb-4 mt-3 shadow-sm reason-box">
                     <h6 class="fw-bold mb-3 text-success text-uppercase" style="letter-spacing: 0.5px; font-size: 0.85rem;"><i class="fas fa-bullseye me-2"></i>Why this fits your passion</h6>
                     <p class="mb-0" style="line-height: 1.75; font-size: 1.15rem; font-family: 'Georgia', serif; color: #334155; font-style: italic;">"${data.interest_match_reason}"</p>
                 </div>
@@ -1630,36 +3394,59 @@ async function sendReportToEmail(reportToSend = currentResults, buttonElement = 
 // 📱 MOBILE SIDEBAR CONTROLS (BULLETPROOF)
 // ==========================================
 function toggleSidebar() {
+    if (window.innerWidth > 768) {
+        toggleDesktopSidebar();
+        return;
+    }
+
     const sidebar = document.getElementById('main-sidebar');
     const overlay = document.getElementById('mobile-overlay');
-    
-    // Check if it's currently open
-    const isOpen = sidebar.classList.contains('show-mobile');
-    
-    if (isOpen) {
-        // Close it
-        sidebar.classList.remove('show-mobile');
-        sidebar.style.setProperty('transform', 'translateX(-100%)');
-        overlay.style.display = 'none';
-    } else {
-        // Open it (Forcing display to flex to override the HTML inline style)
-        sidebar.classList.add('show-mobile');
-        sidebar.style.setProperty('display', 'flex', 'important');
-        sidebar.style.setProperty('transform', 'translateX(0%)');
-        overlay.style.display = 'block';
-    }
+    const toggle = document.getElementById('sidebar-toggle');
+    const isOpen = sidebar.classList.toggle('show-mobile');
+
+    overlay.style.display = isOpen ? 'block' : 'none';
+    toggle.setAttribute('aria-expanded', String(isOpen));
+    toggle.setAttribute('aria-label', isOpen ? 'Close navigation menu' : 'Open navigation menu');
+}
+
+function toggleDesktopSidebar() {
+    const app = document.getElementById('main-app');
+    const isHidden = app.classList.toggle('sidebar-hidden');
+    const toggle = document.getElementById('sidebar-toggle');
+    toggle.setAttribute('aria-expanded', String(!isHidden));
+    toggle.setAttribute('aria-label', isHidden ? 'Show sidebar' : 'Hide sidebar');
 }
 
 function closeSidebarOnMobile() {
     if (window.innerWidth <= 768) {
         const sidebar = document.getElementById('main-sidebar');
         const overlay = document.getElementById('mobile-overlay');
+        const toggle = document.getElementById('sidebar-toggle');
         
         sidebar.classList.remove('show-mobile');
-        sidebar.style.setProperty('transform', 'translateX(-100%)');
         overlay.style.display = 'none';
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.setAttribute('aria-label', 'Open navigation menu');
     }
 }
+
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') closeSidebarOnMobile();
+});
+
+window.addEventListener('resize', () => {
+    if (window.innerWidth > 768) {
+        const sidebar = document.getElementById('main-sidebar');
+        const overlay = document.getElementById('mobile-overlay');
+        const toggle = document.getElementById('sidebar-toggle');
+
+        sidebar.classList.remove('show-mobile');
+        overlay.style.display = 'none';
+        const sidebarHidden = document.getElementById('main-app').classList.contains('sidebar-hidden');
+        toggle.setAttribute('aria-expanded', String(!sidebarHidden));
+        toggle.setAttribute('aria-label', sidebarHidden ? 'Show sidebar' : 'Hide sidebar');
+    }
+});
     // --- PWA SERVICE WORKER REGISTRATION ---
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {

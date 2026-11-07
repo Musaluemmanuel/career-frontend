@@ -28,8 +28,8 @@
 
         <form id="authForm" onsubmit="handleAuth(event)">
             <div class="form-floating mb-3 text-start">
-                <input type="text" id="loginUsername" class="form-control" placeholder="Username" required>
-                <label>Username (First Name)</label>
+                <input type="text" id="loginUsername" class="form-control" placeholder="Username or email" required>
+                <label id="usernameLabel">Username or Email</label>
             </div>
 
             <div class="form-floating mb-3 text-start" id="emailDiv" style="display: none;">
@@ -59,7 +59,6 @@
                 Sign In
             </button>
         </form>
-</form>
 
         <div class="text-center mt-3 mb-2">
             <div id="g_id_onload"
@@ -84,8 +83,6 @@
             <span class="mx-2 text-muted small">or</span>
             <hr class="flex-grow-1">
         </div>
-        <p id="authToggleContainer" class="mt-4 text-muted small text-center mb-0">
-
         <p id="authToggleContainer" class="mt-4 text-muted small text-center mb-0">
             <span id="authToggleText">New student?</span>
             <a href="#" class="text-primary fw-bold text-decoration-none" id="authToggleLink" onclick="toggleAuthMode(event)">Register here</a>
@@ -182,6 +179,8 @@
             
             document.getElementById('loginConfirmPassword').required = !isLoginMode;
             document.getElementById('loginEmail').required = !isLoginMode;
+            document.getElementById('usernameLabel').innerText = isLoginMode ? "Username or Email" : "Username (First Name)";
+            document.getElementById('loginUsername').placeholder = isLoginMode ? "Username or email" : "Username";
             
             document.getElementById('authBtn').innerText = isLoginMode ? "Sign In" : "Register";
             document.getElementById('authToggleText').innerText = isLoginMode ? "New student?" : "Already have an account?";
@@ -206,7 +205,7 @@
             const user = document.getElementById('loginUsername').value.trim();
             const pass = document.getElementById('loginPassword').value.trim();
             const confirmPass = document.getElementById('loginConfirmPassword').value.trim();
-            const email = document.getElementById('loginEmail').value.trim();
+            const email = document.getElementById('loginEmail').value.trim().toLowerCase();
             const msg = document.getElementById('loginMessage');
             const btn = document.getElementById('authBtn');
 
@@ -219,9 +218,9 @@
             msg.innerText = "Connecting to server...";
 
             const endpoint = isLoginMode ? "/login" : "/register";
-            const payload = isLoginMode ? { email: user, password: pass } : { name: user, password: pass, email: email };
+            const payload = isLoginMode ? { username: user, password: pass } : { name: user, password: pass, email: email };
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 8000); 
+            const timeoutId = setTimeout(() => controller.abort(), 60000);
 
             try {
                 const response = await fetch(`${API_URL}${endpoint}`, {
@@ -240,6 +239,7 @@
                         msg.className = "text-success small fw-bold mt-2";
                         msg.innerText = "Success! Redirecting...";
                         localStorage.setItem('user_name', data.user.name); // Using verified name from backend
+                        localStorage.setItem('user_email', data.user.email);
                         setTimeout(() => { window.location.href = "index.html"; }, 500);
                     } else {
                         // REGISTRATION SUCCESS -> SHOW VERIFICATION
@@ -258,11 +258,12 @@
             } catch (error) {
                 msg.className = "text-danger small fw-bold mt-2";
                 if (error.name === 'AbortError') {
-                    msg.innerText = "Server took too long. Is your Python terminal running?";
+                    msg.innerText = "The server took too long to respond. Please try again.";
                 } else {
-                    msg.innerText = "Cannot reach Python server. Is app.py running?";
+                    msg.innerText = "Cannot reach the server. Check your connection and try again.";
                 }
             } finally {
+                clearTimeout(timeoutId);
                 btn.disabled = false;
                 if(msg.innerText !== "Success! Redirecting...") btn.innerText = originalBtnText;
             }
@@ -304,6 +305,7 @@
                     
                     // --- AUTO-LOGIN TRIGGER ---
                     localStorage.setItem('user_name', data.user.name); 
+                    localStorage.setItem('user_email', data.user.email);
                     localStorage.removeItem('pendingVerificationEmail'); // Clean up memory
 
                     setTimeout(() => {
