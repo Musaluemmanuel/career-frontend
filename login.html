@@ -270,7 +270,11 @@
                 });
                 
                 clearTimeout(timeoutId);
-                const data = await response.json();
+                const data = await response.json().catch(() => ({
+                    message: response.status >= 500
+                        ? "The authentication server is temporarily unavailable. Please try again shortly."
+                        : "The server returned an unexpected response. Please try again."
+                }));
 
                 if (response.ok) {
                     if (isLoginMode) {
@@ -346,7 +350,11 @@
                     body: JSON.stringify({ email: pendingVerificationEmail, code: code })
                 });
 
-                const data = await response.json();
+                const data = await response.json().catch(() => ({
+                    message: response.status >= 500
+                        ? "The authentication server is temporarily unavailable. Please try again shortly."
+                        : "Invalid code. Try again."
+                }));
 
                 if (response.ok) {
                     messageEl.className = "text-success small fw-bold mt-3";
