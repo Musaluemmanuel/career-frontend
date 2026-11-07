@@ -80,6 +80,8 @@
         .course-col { flex: 1; min-width: 0; padding-right: 20px;}
         .level-col { width: 120px; text-align: right; padding-right: 20px; } /* New column for the badge */
         .date-col { width: 100px; text-align: right; color: #64748b; font-size: 0.85rem; font-weight: 500;}
+        .download-col { width: 48px; text-align: center; }
+        .download-report-button { width: 34px; height: 34px; padding: 0; }
         
         .course-title { font-weight: 600; color: #0f172a; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
         .course-subtitle { font-size: 0.85rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
@@ -309,6 +311,11 @@
                         <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill level-badge">${level}</span>
                     </div>
                     <div class="date-col">${dateStr}</div>
+                    <div class="download-col">
+                        <button type="button" class="btn btn-light border download-report-button rounded-circle" title="Download PDF" aria-label="Download ${courseName} report as PDF" onclick="event.stopPropagation(); downloadArchivedReport(${index}, this)">
+                            <i class="fas fa-download text-primary"></i>
+                        </button>
+                    </div>
                 </div>
             `;
         }).join('');
@@ -426,21 +433,51 @@
         return doc;
     }
 
+    function makeReportFileName(report, suffix = "Saved_Placement_Report") {
+        const aiResults = report?.ai_response || report || {};
+        const path = aiResults.specific_course || aiResults.course || aiResults.ai_role || suffix;
+        const safePath = String(path).replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "").slice(0, 50);
+        const studentName = String(currentUser || "Student").replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "") || "Student";
+        return `${studentName}_${safePath || suffix}.pdf`;
+    }
+
+    function downloadArchivedReport(index, button = null) {
+        const report = globalReports[index];
+        if (!report) { alert("Error loading report data."); return; }
+        const aiResults = report.ai_response || report;
+        const originalHtml = button?.innerHTML;
+        if (button) { button.disabled = true; button.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`; }
+        try {
+            if (!window.jspdf) throw new Error("PDF library is unavailable");
+            const doc = buildPDFDocument(aiResults, report);
+            doc.save(makeReportFileName(report));
+        } catch (error) {
+            console.error("Report download failed:", error);
+            alert("The report could not be downloaded. Please try again.");
+        } finally {
+            if (button) { button.disabled = false; button.innerHTML = originalHtml; }
+        }
+    }
+
     function downloadSavedPDF() {
         if (!currentViewedReport) { alert("Error loading report data."); return; }
         const aiResults = currentViewedReport.ai_response || currentViewedReport;
-        
-        // Change button text briefly to show action
         const btn = document.querySelector('button[onclick="downloadSavedPDF()"]');
         const originalHtml = btn.innerHTML;
+        btn.disabled = true;
         btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Generating...`;
-        
         setTimeout(() => {
-            const doc = buildPDFDocument(aiResults, currentViewedReport);
-            const studentName = currentUser || "Student";
-            const fileName = `${studentName.replace(/\s+/g, '_')}_Saved_Placement_Report.pdf`;
-            doc.save(fileName);
-            btn.innerHTML = originalHtml;
+            try {
+                if (!window.jspdf) throw new Error("PDF library is unavailable");
+                const doc = buildPDFDocument(aiResults, currentViewedReport);
+                doc.save(makeReportFileName(currentViewedReport));
+            } catch (error) {
+                console.error("Report download failed:", error);
+                alert("The report could not be downloaded. Please try again.");
+            } finally {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
         }, 300);
     }// --- PWA SERVICE WORKER REGISTRATION ---
 if ('serviceWorker' in navigator) {
