@@ -42,30 +42,61 @@ button {
     padding: 16px !important;
   }
 
-  /* Saved reports currently use a desktop sidebar; stack it above content. */
+  /* Keep the saved-reports sidebar in a left-side mobile drawer. */
   body:has(.main-content #inboxList) .sidebar {
-    position: relative !important;
-    inset: auto !important;
-    width: 100% !important;
-    height: auto !important;
-    min-height: 0;
-    padding: 16px !important;
+    position: fixed !important;
+    top: 0 !important;
+    right: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: min(280px, calc(100vw - 56px)) !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+    z-index: 1050 !important;
+    transform: translateX(-100%);
   }
 
-  body:has(.main-content #inboxList) .sidebar .nav {
-    flex-direction: column !important;
-    flex-wrap: nowrap;
-    gap: 0;
+  body:has(.main-content #inboxList) .sidebar.show-mobile {
+    transform: translateX(0);
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.2);
   }
 
-  body:has(.main-content #inboxList) .sidebar .nav-item {
-    margin-top: 0 !important;
+  body:has(.main-content #inboxList) .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1040;
+    background: rgba(15, 23, 42, 0.45);
+  }
+
+  body:has(.main-content #inboxList) .sidebar-overlay.show {
+    display: block;
+  }
+
+  body:has(.main-content #inboxList) .reports-menu-toggle {
+    display: inline-flex !important;
+    flex: 0 0 auto;
+  }
+
+  body:has(.main-content #inboxList) .reports-heading-group {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  body:has(.main-content #inboxList) .reports-heading-group > div {
+    min-width: 0;
   }
 
   body:has(.main-content #inboxList) .main-content {
     width: 100%;
     margin: 0 !important;
     padding: 20px !important;
+  }
+
+  body.reports-sidebar-open {
+    overflow: hidden;
   }
 
   /* Keep report rows usable at phone widths. */
