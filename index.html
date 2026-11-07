@@ -347,11 +347,16 @@
                 position: fixed !important;
                 top: 0 !important;
                 left: 0 !important;
-                width: 280px !important;
+                right: auto !important;
+                bottom: 0 !important;
+                width: min(280px, calc(100vw - 56px)) !important;
+                max-width: calc(100vw - 56px) !important;
                 height: 100vh !important;
                 height: 100dvh !important;
                 z-index: 1050 !important;
                 transform: translateX(-100%);
+                overflow-x: hidden;
+                overflow-y: auto;
             }
 
             .sidebar.show-mobile {
@@ -365,7 +370,12 @@
             }
 
             .sidebar-brand-toggle {
-                display: none;
+                display: inline-flex;
+                flex: 0 0 36px;
+                width: 36px;
+                height: 36px;
+                align-items: center;
+                justify-content: center;
             }
 
             .main-content {
@@ -902,8 +912,8 @@
    <div id="main-sidebar" class="sidebar d-flex flex-column p-4 shadow-lg" style="display: none !important;">
         <div class="sidebar-brand mb-4">
             <h4 class="fw-bold text-white"><i class="fas fa-brain me-2 text-light"></i>CareerPath AI</h4>
-            <button id="sidebar-collapse-toggle" class="btn btn-sm btn-outline-primary sidebar-brand-toggle" type="button" aria-label="Hide sidebar" title="Hide sidebar" onclick="toggleDesktopSidebar()">
-                <i class="fas fa-chevron-left" aria-hidden="true"></i>
+            <button id="sidebar-collapse-toggle" class="btn btn-sm btn-outline-primary sidebar-brand-toggle" type="button" aria-label="Close navigation menu" title="Close navigation menu" onclick="closeSidebarOrHide()">
+                <i class="fas fa-xmark" aria-hidden="true"></i>
             </button>
         </div>
 
@@ -940,6 +950,9 @@
                 <button class="btn btn-sm btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#accountSettingsModal">
                     <i class="fas fa-cog me-2"></i>Account Settings
                 </button>
+                <button class="btn btn-sm btn-outline-primary w-100" type="button" onclick="openDataConsentSettings()">
+                    <i class="fas fa-user-shield me-2"></i>Privacy &amp; Data
+                </button>
                 <button onclick="logout()" class="btn btn-sm btn-outline-primary w-100">
                     <i class="fas fa-sign-out-alt me-2"></i>Log Out
                 </button>
@@ -974,9 +987,14 @@
                     <div id="careerChatMessages" class="career-chat-messages" role="log" aria-live="polite" aria-relevant="additions text">
                         <div id="careerChatMessageList"></div>
                         <section id="careerGradeStage" class="career-grade-summary" aria-label="Grade summary" style="display: none;">
-                            <div class="career-grade-summary-heading">
-                                <i class="fas fa-chart-simple"></i>
-                                <span>Your optional grades</span>
+                            <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+                                <div class="career-grade-summary-heading mb-0">
+                                    <i class="fas fa-chart-simple"></i>
+                                    <span>Your optional grades</span>
+                                </div>
+                                <button class="btn btn-sm btn-outline-secondary" type="button" aria-label="Close optional grades" title="Close optional grades" onclick="closeCareerGradeStage()">
+                                    <i class="fas fa-xmark" aria-hidden="true"></i>
+                                </button>
                             </div>
                             <p id="careerGradeProgressNote" class="small fw-semibold text-secondary mb-3"></p>
                             <div class="row g-2 text-center">
@@ -1000,6 +1018,9 @@
                                 Continue with these grades <i class="fas fa-arrow-right ms-2"></i>
                             </button>
                         </section>
+                        <button id="careerGradeReopenButton" class="btn btn-sm btn-outline-primary mt-2" type="button" style="display:none;" onclick="beginCareerGrades()">
+                            <i class="fas fa-graduation-cap me-1"></i>Show optional grades
+                        </button>
                         <div id="careerChatContinuePrompt" class="career-chat-continue" style="display: none;">
                             <p id="careerChatContinueText"></p>
                             <div class="career-chat-next-actions">
@@ -1258,6 +1279,34 @@
     </div>
 </div>
 
+<div class="modal fade" id="dataConsentModal" tabindex="-1" aria-labelledby="dataConsentTitle" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content text-dark">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="dataConsentTitle"><i class="fas fa-user-shield text-primary me-2"></i>Your data choices</h5>
+            </div>
+            <div class="modal-body">
+                <p class="text-secondary">When you request a recommendation, your answers and grades are sent to our configured AI provider, and the resulting report is saved to your CareerPath account history. These core service uses are separate from the optional choices below; declining them will not block the app.</p>
+                <div class="form-check border rounded-3 p-3 ps-5 mb-3">
+                    <input class="form-check-input" type="checkbox" id="personalizationConsent">
+                    <label class="form-check-label fw-semibold" for="personalizationConsent">Save chats and profile on this device</label>
+                    <div class="small text-secondary mt-1">This lets CareerPath AI remember your current profile and conversations on this browser for continuity. It is not synced to other devices. Turning this off stops future saving and loading but does not erase existing browser-stored copies.</div>
+                </div>
+                <div class="form-check border rounded-3 p-3 ps-5">
+                    <input class="form-check-input" type="checkbox" id="improvementConsent">
+                    <label class="form-check-label fw-semibold" for="improvementConsent">Share a de-identified career category to improve trends</label>
+                    <div class="small text-secondary mt-1">Only a broad career category is included—not your name, email, grades, or chat. Grades are never included in this improvement data, and this app does not currently train AI models on user data. We will ask for separate consent before any model-training use begins. Once included, anonymous trend counts cannot be linked back to or removed for one account.</div>
+                </div>
+                <div id="dataConsentStatus" class="alert alert-danger small mt-3 mb-0" role="alert" style="display:none;"></div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-outline-secondary" onclick="declineOptionalDataUse()">Continue with optional use off</button>
+                <button type="button" class="btn btn-primary" onclick="saveDataConsentChoices()">Save my choices</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="reportViewModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content border-0 shadow-lg">
@@ -1292,6 +1341,9 @@
     let careerChatState = null;
     let careerChatAttachments = [];
     let careerSpeechRecognition = null;
+    let dataConsent = { personalization: false, improvement: false, recorded: false };
+    let initialConsentPending = false;
+    let initialConsentResolver = null;
     
     const careerGradeSubjects = [
         { key: "Math", label: "Maths" },
@@ -1320,7 +1372,7 @@
         7: "C+", 6: "C", 5: "C-", 4: "D+", 3: "D", 2: "D-", 1: "E" 
     };
     
-window.onload = () => {
+window.onload = async () => {
         // 1. Check if they are logged in
         const savedUser = localStorage.getItem('user_name');
         if (!savedUser) { 
@@ -1341,6 +1393,7 @@ window.onload = () => {
             document.getElementById('settingsAccountEmail').value = localStorage.getItem('user_email') || '';
         });
         document.getElementById("sidebar-user").innerText = currentUser;
+        await loadDataConsent();
         initializeCareerChat();
         updateTotalPoints();
         document.getElementById('careerChatInput').addEventListener('keydown', event => {
@@ -1357,6 +1410,140 @@ window.onload = () => {
         loadSavedProfile(); 
         showSection('profile'); 
     };
+
+    function setDataConsentFields(consent) {
+        document.getElementById('personalizationConsent').checked = consent.personalization === true;
+        document.getElementById('improvementConsent').checked = consent.improvement === true;
+    }
+
+    function showDataConsentStatus(message) {
+        const status = document.getElementById('dataConsentStatus');
+        status.textContent = message;
+        status.style.display = message ? 'block' : 'none';
+    }
+
+    function updateCareerChatPrivacyLabel() {
+        const context = document.getElementById('careerChatContext');
+        if (!context) return;
+        context.textContent = dataConsent.personalization
+            ? `${currentUser} · Grades optional · Conversations saved on this device`
+            : `${currentUser} · Grades optional · Conversations stay in this session`;
+        renderCareerChatHistory();
+    }
+
+    async function loadDataConsent() {
+        const token = sessionStorage.getItem('career_access_token');
+        try {
+            if (!token) throw new Error('No signed-in session token is available.');
+            const response = await fetch(`${API_URL}/data-consent`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || 'Could not load your data choices.');
+            if (result.recorded) {
+                dataConsent = {
+                    personalization: result.personalization === true,
+                    improvement: result.improvement === true,
+                    recorded: true
+                };
+                setDataConsentFields(dataConsent);
+                updateCareerChatPrivacyLabel();
+                return;
+            }
+        } catch (error) {
+            console.error('Could not load saved data choices.', error);
+            showDataConsentStatus('We could not load or save your preferences right now. Optional use stays off unless your choices can be saved. You can continue with optional use off.');
+        }
+
+        dataConsent = { personalization: false, improvement: false, recorded: false };
+        setDataConsentFields(dataConsent);
+        initialConsentPending = true;
+        const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('dataConsentModal'), {
+            backdrop: 'static',
+            keyboard: false
+        });
+        modal.show();
+        await new Promise(resolve => {
+            initialConsentResolver = resolve;
+        });
+        initialConsentPending = false;
+        updateCareerChatPrivacyLabel();
+    }
+
+    async function saveDataConsentChoices(choices, allowOfflineOptOut = false) {
+        const next = choices || {
+            personalization: document.getElementById('personalizationConsent').checked,
+            improvement: document.getElementById('improvementConsent').checked
+        };
+        const token = sessionStorage.getItem('career_access_token');
+        const saveButton = document.querySelector('#dataConsentModal .btn-primary');
+        saveButton.disabled = true;
+        showDataConsentStatus('');
+        try {
+            if (!token) throw new Error('Sign in again before saving data choices.');
+            const response = await fetch(`${API_URL}/data-consent`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(next)
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || 'Could not save your data choices.');
+            dataConsent = {
+                personalization: result.personalization === true,
+                improvement: result.improvement === true,
+                recorded: true
+            };
+            setDataConsentFields(dataConsent);
+            updateCareerChatPrivacyLabel();
+            bootstrap.Modal.getInstance(document.getElementById('dataConsentModal')).hide();
+            if (initialConsentResolver) {
+                initialConsentResolver();
+                initialConsentResolver = null;
+            }
+            return true;
+        } catch (error) {
+            console.error('Could not save data choices.', error);
+            if (
+                allowOfflineOptOut
+                && !dataConsent.recorded
+                && !next.personalization
+                && !next.improvement
+            ) {
+                dataConsent = { personalization: false, improvement: false, recorded: false };
+                bootstrap.Modal.getInstance(document.getElementById('dataConsentModal')).hide();
+                if (initialConsentResolver) {
+                    initialConsentResolver();
+                    initialConsentResolver = null;
+                }
+                return false;
+            }
+            showDataConsentStatus(`${error.message} Your choices were not saved.`);
+            return false;
+        } finally {
+            saveButton.disabled = false;
+        }
+    }
+
+    function declineOptionalDataUse() {
+        document.getElementById('personalizationConsent').checked = false;
+        document.getElementById('improvementConsent').checked = false;
+        saveDataConsentChoices(
+            { personalization: false, improvement: false },
+            true
+        );
+    }
+
+    function openDataConsentSettings() {
+        setDataConsentFields(dataConsent);
+        showDataConsentStatus('');
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('dataConsentModal'), {
+            backdrop: 'static',
+            keyboard: false
+        }).show();
+    }
 
     function updateTotalPoints() {
         const grades = careerChatState?.answers?.grades || {};
@@ -1425,6 +1612,7 @@ window.onload = () => {
             step: 0,
             gradeIndex: 0,
             askedGradeIndex: -1,
+            gradeStageDismissed: false,
             completed: false,
             assistantName: "CareerPath AI",
             awaitingAssistantName: true,
@@ -1451,18 +1639,22 @@ window.onload = () => {
     function initializeCareerChat() {
         const key = `${currentUser}_career_chat`;
         const welcomeBackKey = `${currentUser}_career_chat_welcomed_back`;
-        try {
-            const saved = JSON.parse(localStorage.getItem(key) || "null");
-            if (saved && saved.answers && Array.isArray(saved.messages)) {
-                careerChatState = restoreCareerChatState(saved);
-            } else {
-                const conversations = readSavedCareerChats();
-                careerChatState = conversations.length
-                    ? restoreCareerChatState(conversations[0].state)
-                    : newCareerChatState();
+        if (dataConsent.personalization) {
+            try {
+                const saved = JSON.parse(localStorage.getItem(key) || "null");
+                if (saved && saved.answers && Array.isArray(saved.messages)) {
+                    careerChatState = restoreCareerChatState(saved);
+                } else {
+                    const conversations = readSavedCareerChats();
+                    careerChatState = conversations.length
+                        ? restoreCareerChatState(conversations[0].state)
+                        : newCareerChatState();
+                }
+            } catch (error) {
+                console.error("Could not restore the saved course-fit conversation.", error);
+                careerChatState = newCareerChatState();
             }
-        } catch (error) {
-            console.error("Could not restore the saved course-fit conversation.", error);
+        } else {
             careerChatState = newCareerChatState();
         }
 
@@ -1518,6 +1710,7 @@ window.onload = () => {
                 ? Math.min(Math.max(saved.gradeIndex, 0), careerGradeSubjects.length)
                 : 0,
             askedGradeIndex: -1,
+            gradeStageDismissed: saved.gradeStageDismissed === true,
             answers: {
                 ...freshState.answers,
                 ...saved.answers,
@@ -1538,6 +1731,7 @@ window.onload = () => {
     }
 
     function readSavedCareerChats() {
+        if (!dataConsent.personalization) return [];
         try {
             const saved = JSON.parse(localStorage.getItem(`${currentUser}_career_chats`) || "[]");
             return Array.isArray(saved) ? saved.filter(item =>
@@ -1561,6 +1755,11 @@ window.onload = () => {
     function renderCareerChatHistory() {
         const select = document.getElementById('careerChatHistory');
         if (!select) return;
+        if (!dataConsent.personalization) {
+            select.replaceChildren();
+            select.style.display = "none";
+            return;
+        }
         const conversations = readSavedCareerChats();
         if (careerChatState && !conversations.some(item => item.id === careerChatState.id)) {
             conversations.unshift({
@@ -1714,6 +1913,10 @@ window.onload = () => {
 
     function saveCareerChat() {
         if (!careerChatState || !currentUser) return;
+        if (!dataConsent.personalization) {
+            renderCareerChatHistory();
+            return;
+        }
         careerChatState.messages = careerChatState.messages.slice(-50);
         careerChatState.updatedAt = Date.now();
         try {
@@ -1736,6 +1939,7 @@ window.onload = () => {
     }
 
     function switchCareerChat(conversationId) {
+        if (!dataConsent.personalization) return;
         if (!conversationId || conversationId === careerChatState?.id) return;
         const conversation = readSavedCareerChats().find(item => item.id === conversationId);
         if (!conversation) {
@@ -1780,8 +1984,7 @@ window.onload = () => {
             title.textContent = assistantName;
         }
         document.getElementById('careerChatAvatar').textContent = Array.from(assistantName.trim())[0] || "C";
-        document.getElementById('careerChatContext').textContent =
-            `${currentUser} · Grades optional · Conversations saved on this device`;
+        updateCareerChatPrivacyLabel();
         chatCard.classList.toggle("is-empty", isNewConversation);
         if (
             step === 5
@@ -1847,7 +2050,9 @@ window.onload = () => {
         const noMoreSubjects = isGradeStep && gradeIndex >= careerGradeSubjects.length;
         const gradeCount = Object.keys(careerChatState.answers.grades).length;
         composer.style.display = step === 0 || (isGradeStep && !noMoreSubjects) ? "flex" : "none";
-        gradeStage.style.display = isGradeStep || gradeCount > 0 ? "block" : "none";
+        const gradeStageDismissed = careerChatState.gradeStageDismissed === true;
+        gradeStage.style.display = !gradeStageDismissed && (isGradeStep || gradeCount > 0) ? "block" : "none";
+        document.getElementById('careerGradeReopenButton').style.display = gradeStageDismissed ? "inline-block" : "none";
         const skipButton = document.getElementById('careerChatSkipButton');
         skipButton.style.display = isGradeStep && !noMoreSubjects ? "inline-block" : "none";
         skipButton.textContent = isGradeStep ? "Skip subject" : "Skip";
@@ -1899,7 +2104,8 @@ window.onload = () => {
         document.getElementById('careerChatExploreButton').style.display = shouldOfferGrades ? "inline-block" : "none";
         document.getElementById('careerChatContinueButton').style.display = shouldOfferGrades ? "inline-block" : "none";
         document.getElementById('careerChatContinueButton').disabled = Boolean(careerChatState.pending);
-        const hasSavedProfile = Boolean(localStorage.getItem(`${currentUser}_saved_profile`));
+        const hasSavedProfile = dataConsent.personalization
+            && Boolean(localStorage.getItem(`${currentUser}_saved_profile`));
         const gradeActionButton = document.getElementById('saveProfileBtn');
         if (isGradeStep) {
             gradeActionButton.style.display = "inline-block";
@@ -2124,6 +2330,7 @@ window.onload = () => {
     }
 
     function beginCareerGrades() {
+        careerChatState.gradeStageDismissed = false;
         careerChatState.step = 5;
         careerChatState.gradeIndex = careerGradeSubjects.findIndex(subject =>
             !Object.prototype.hasOwnProperty.call(careerChatState.answers.grades, subject.key)
@@ -2138,6 +2345,23 @@ window.onload = () => {
         saveCareerChat();
         renderCareerChat();
         document.getElementById('careerChatInput').focus();
+    }
+
+    function closeCareerGradeStage() {
+        if (!careerChatState) return;
+        const lastMessage = careerChatState.messages[careerChatState.messages.length - 1];
+        if (
+            lastMessage?.role === "assistant"
+            && lastMessage.text === currentCareerQuestion()
+        ) {
+            careerChatState.messages.pop();
+        }
+        careerChatState.gradeStageDismissed = true;
+        careerChatState.step = 0;
+        careerChatState.askedGradeIndex = -1;
+        careerChatState.draft = "";
+        saveCareerChat();
+        renderCareerChat();
     }
 
     function exploreCareerOptions() {
@@ -2368,7 +2592,9 @@ window.onload = () => {
             subjects,
             conversationId: careerChatState?.id || ""
         };
-        localStorage.setItem(`${currentUser}_saved_profile`, JSON.stringify(profileData));
+        if (dataConsent.personalization) {
+            localStorage.setItem(`${currentUser}_saved_profile`, JSON.stringify(profileData));
+        }
 
         const summaryLines = [`Interests: ${interest}`];
         if (conversationContext.motivation) summaryLines.push(`What appeals: ${conversationContext.motivation}`);
@@ -2412,6 +2638,7 @@ window.onload = () => {
         document.getElementById('profileSummaryContainer').style.display = 'none';
         document.getElementById('profileFormContainer').style.display = 'block';
         if (careerChatState && careerChatState.answers.interest) {
+            careerChatState.gradeStageDismissed = false;
             careerChatState.step = 5;
             careerChatState.gradeIndex = careerGradeSubjects.findIndex(subject =>
                 !Object.prototype.hasOwnProperty.call(careerChatState.answers.grades, subject.key)
@@ -2430,6 +2657,11 @@ window.onload = () => {
     }
 
     function loadSavedProfile() {
+        if (!dataConsent.personalization) {
+            document.getElementById('profileSummaryContainer').style.display = 'none';
+            document.getElementById('profileFormContainer').style.display = 'block';
+            return;
+        }
         const saved = localStorage.getItem(`${currentUser}_saved_profile`);
         if (saved) {
             try {
@@ -2825,18 +3057,58 @@ window.onload = () => {
             });
         } 
     }
+    function getCurrentCareerProfileData() {
+        if (dataConsent.personalization) {
+            const saved = localStorage.getItem(`${currentUser}_saved_profile`);
+            if (saved) {
+                try {
+                    const profile = JSON.parse(saved);
+                    if (profile && typeof profile === "object") return profile;
+                    console.error("The saved career profile has an unexpected format.");
+                } catch (error) {
+                    console.error("Could not read the saved career profile.", error);
+                }
+            }
+        }
+
+        const answers = careerChatState?.answers || {};
+        const interest = String(answers.interest || document.getElementById('interestArea').value || "").trim();
+        const subjects = answers.grades && typeof answers.grades === "object" ? { ...answers.grades } : {};
+        const chatHistory = (careerChatState?.messages || [])
+            .filter(message => message.role === "user")
+            .map(message => message.text)
+            .filter(text => !/^(?:Maths|English|Kiswahili|Biology|Physics|Chemistry|History|CRE|Geography|Business|Agriculture|Music|Computer Studies|Home Science):\s/.test(text))
+            .filter(text => !/^I did not take /.test(text))
+            .join("\n")
+            .slice(-6000);
+        const conversationContext = {
+            motivation: answers.motivation || "",
+            priorities: Array.isArray(answers.priorities) ? answers.priorities : [],
+            preferred_level: answers.preferredLevel === "Not sure yet" ? "" : answers.preferredLevel || "",
+            constraints: answers.constraints || "",
+            chat_history: chatHistory
+        };
+        const count = Object.keys(subjects).length;
+        return {
+            interest,
+            conversationContext,
+            points: count ? document.getElementById('aggregatePoints').value : "",
+            meanGrade: count ? document.getElementById('meanGradeLetter').value : "",
+            subjects,
+            conversationId: careerChatState?.id || ""
+        };
+    }
+
 // --- MAIN AI RECOMMENDATION LOGIC ---
     async function getRecommendations() {
-        // 1. Get the profile data
-        const savedProfile = localStorage.getItem(`${currentUser}_saved_profile`);
-        if (!savedProfile) {
+        const profileData = getCurrentCareerProfileData();
+        if (!profileData.interest) {
             showSection('profile');
             document.getElementById('profileSummaryContainer').style.display = "none";
             document.getElementById('profileFormContainer').style.display = "block";
             showCareerChatNotice("We can begin with your interests, questions, or grades. When you’re ready, I’ll use your grades to check course eligibility.");
             return;
         }
-        const profileData = JSON.parse(savedProfile);
         
         const userData = {
             name: currentUser,
@@ -2844,7 +3116,8 @@ window.onload = () => {
             grades: profileData.subjects,
             points: profileData.points,
             conversation_context: profileData.conversationContext || {},
-            preferred_level: profileData.conversationContext?.preferred_level || ""
+            preferred_level: profileData.conversationContext?.preferred_level || "",
+            improvement_consent: dataConsent.improvement
         };
 
         // 2. Prepare the UI
@@ -2950,11 +3223,14 @@ if (!data.alternative_careers || data.alternative_careers.length === 0) {
         
         const points = document.getElementById('aggregatePoints').value;
         const meanGrade = document.getElementById('meanGradeLetter').value;
-        const profileData = JSON.parse(localStorage.getItem(`${currentUser}_saved_profile`));
+        const profileData = getCurrentCareerProfileData();
         profileData.interest = originalInterestArea.value;
         profileData.points = points;
         profileData.meanGrade = meanGrade;
-        localStorage.setItem(`${currentUser}_saved_profile`, JSON.stringify(profileData));
+        if (careerChatState) careerChatState.answers.interest = profileData.interest;
+        if (dataConsent.personalization) {
+            localStorage.setItem(`${currentUser}_saved_profile`, JSON.stringify(profileData));
+        }
         
         getRecommendations();
     }
@@ -2973,11 +3249,14 @@ if (!data.alternative_careers || data.alternative_careers.length === 0) {
         
         const points = document.getElementById('aggregatePoints').value;
         const meanGrade = document.getElementById('meanGradeLetter').value;
-        const profileData = JSON.parse(localStorage.getItem(`${currentUser}_saved_profile`));
+        const profileData = getCurrentCareerProfileData();
         profileData.interest = originalInterestArea.value;
         profileData.points = points;
         profileData.meanGrade = meanGrade;
-        localStorage.setItem(`${currentUser}_saved_profile`, JSON.stringify(profileData));
+        if (careerChatState) careerChatState.answers.interest = profileData.interest;
+        if (dataConsent.personalization) {
+            localStorage.setItem(`${currentUser}_saved_profile`, JSON.stringify(profileData));
+        }
         
         getRecommendations();
     }
@@ -3416,6 +3695,14 @@ function toggleDesktopSidebar() {
     const toggle = document.getElementById('sidebar-toggle');
     toggle.setAttribute('aria-expanded', String(!isHidden));
     toggle.setAttribute('aria-label', isHidden ? 'Show sidebar' : 'Hide sidebar');
+}
+
+function closeSidebarOrHide() {
+    if (window.innerWidth <= 768) {
+        closeSidebarOnMobile();
+        return;
+    }
+    toggleDesktopSidebar();
 }
 
 function closeSidebarOnMobile() {

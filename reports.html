@@ -25,6 +25,7 @@
             position: fixed; 
             width: 280px; 
             z-index: 1000;
+            transition: transform 0.3s ease-in-out;
         }
         .sidebar .text-white { color: #1d4ed8 !important; }
         .sidebar .text-info { color: #059669 !important; }
@@ -85,9 +86,38 @@
         
         .level-badge { font-size: 0.75rem; padding: 5px 10px; }
 
+        .reports-menu-toggle,
+        .sidebar-overlay {
+            display: none;
+        }
+
         @media (max-width: 768px) {
-            .sidebar { width: 100%; height: auto; position: relative; }
-            .main-content { margin-left: 0; padding: 20px; }
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: min(280px, calc(100vw - 56px));
+                height: 100vh;
+                height: 100dvh;
+                z-index: 1050;
+                transform: translateX(-100%);
+            }
+            .sidebar.show-mobile {
+                transform: translateX(0);
+                box-shadow: 4px 0 15px rgba(0,0,0,0.2);
+            }
+            .main-content { width: 100%; margin-left: 0; padding: 20px; }
+            .reports-menu-toggle { display: inline-flex; flex: 0 0 auto; }
+            .reports-heading-group { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+            .reports-heading-group > div { min-width: 0; }
+            .sidebar-overlay {
+                position: fixed;
+                inset: 0;
+                z-index: 1040;
+                background: rgba(15, 23, 42, 0.45);
+            }
+            .sidebar-overlay.show { display: block; }
+            body.reports-sidebar-open { overflow: hidden; }
             .date-col, .level-col { display: none; }
         }
     </style><link rel="manifest" href="manifest.json">
@@ -97,7 +127,7 @@
 <body>
 
 <div id="main-app">
-    <div class="sidebar d-flex flex-column p-4 shadow-lg">
+    <div id="reports-sidebar" class="sidebar d-flex flex-column p-4 shadow-lg">
         <h4 class="fw-bold mb-4 text-white"><i class="fas fa-brain me-2 text-info"></i>CareerPath AI</h4>
         
         <ul class="nav flex-column mb-auto">
@@ -119,11 +149,18 @@
         </div>
     </div>
 
+    <div id="sidebar-overlay" class="sidebar-overlay" aria-hidden="true" onclick="closeReportsSidebar()"></div>
+
     <div class="main-content">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
+        <div class="d-flex justify-content-between align-items-center gap-3 mb-4">
+            <div class="reports-heading-group">
+                <button id="reports-sidebar-toggle" class="btn btn-outline-primary border-0 reports-menu-toggle" type="button" aria-label="Open navigation menu" aria-controls="reports-sidebar" aria-expanded="false" onclick="toggleReportsSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div>
                 <h2 class="fw-bold text-dark"><i class="fas fa-inbox text-primary me-2"></i>Intelligence Archive</h2>
                 <p class="text-secondary">Review your previously generated career recommendations.</p>
+                </div>
             </div>
             <a href="index.html" class="btn btn-primary shadow-sm px-4 rounded-3">
                 <i class="fas fa-plus me-2"></i> New Analysis
@@ -175,6 +212,38 @@
     let currentUser = "";
     let globalReports = []; 
     let currentViewedReport = null; // Track which report is open for PDF generation
+
+    function toggleReportsSidebar() {
+        const sidebar = document.getElementById("reports-sidebar");
+        const overlay = document.getElementById("sidebar-overlay");
+        const toggle = document.getElementById("reports-sidebar-toggle");
+        const isOpen = sidebar.classList.toggle("show-mobile");
+        overlay.classList.toggle("show", isOpen);
+        overlay.setAttribute("aria-hidden", String(!isOpen));
+        toggle.setAttribute("aria-expanded", String(isOpen));
+        toggle.setAttribute("aria-label", isOpen ? "Close navigation menu" : "Open navigation menu");
+        document.body.classList.toggle("reports-sidebar-open", isOpen);
+    }
+
+    function closeReportsSidebar() {
+        const sidebar = document.getElementById("reports-sidebar");
+        const overlay = document.getElementById("sidebar-overlay");
+        const toggle = document.getElementById("reports-sidebar-toggle");
+        sidebar.classList.remove("show-mobile");
+        overlay.classList.remove("show");
+        overlay.setAttribute("aria-hidden", "true");
+        toggle.setAttribute("aria-expanded", "false");
+        toggle.setAttribute("aria-label", "Open navigation menu");
+        document.body.classList.remove("reports-sidebar-open");
+    }
+
+    document.addEventListener("keydown", event => {
+        if (event.key === "Escape") closeReportsSidebar();
+    });
+
+    window.addEventListener("resize", () => {
+        if (window.innerWidth > 768) closeReportsSidebar();
+    });
 
     window.onload = () => {
         const savedUser = localStorage.getItem('user_name');
