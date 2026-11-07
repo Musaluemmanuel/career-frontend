@@ -227,7 +227,7 @@
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processing...';
             msg.className = "text-primary small fw-bold mt-2";
-            msg.innerText = "Connecting to server...";
+            msg.replaceChildren();
 
             const endpoint = isLoginMode ? "/login" : "/register";
             const payload = isLoginMode ? { username: user, password: pass } : { name: user, password: pass, email: email };
