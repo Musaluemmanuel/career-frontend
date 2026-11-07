@@ -154,7 +154,7 @@
             messageElement.setAttribute('aria-live', "polite");
             const label = document.createElement('span');
             label.className = "visually-hidden";
-            label.textContent = "Connecting to server...";
+            label.textContent = "Loading...";
             messageElement.replaceChildren(spinner, label);
         }
 
