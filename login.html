@@ -190,6 +190,15 @@
             document.getElementById('loginMessage').innerText = "";
         }
 
+        function switchExistingAccountToLogin(email, message) {
+            if (!isLoginMode) toggleAuthMode();
+            document.getElementById('loginUsername').value = email || "";
+            document.getElementById('loginPassword').focus();
+            const msg = document.getElementById('loginMessage');
+            msg.className = "text-warning small fw-bold mt-2";
+            msg.innerText = message;
+        }
+
         function togglePassword(inputId, iconId) {
             const input = document.getElementById(inputId);
             const icon = document.getElementById(iconId);
@@ -254,8 +263,12 @@
                         document.getElementById('verification-section').style.display = 'block';
                     }
                 } else {
-                    msg.className = "text-danger small fw-bold mt-2";
-                    msg.innerText = data.message || "Authentication failed.";
+                    if (!isLoginMode && (data.code === "account_exists" || data.login_required)) {
+                        switchExistingAccountToLogin(data.email || email, data.message || "This account already exists. Please sign in.");
+                    } else {
+                        msg.className = "text-danger small fw-bold mt-2";
+                        msg.innerText = data.message || "Authentication failed.";
+                    }
                 }
             } catch (error) {
                 msg.className = "text-danger small fw-bold mt-2";

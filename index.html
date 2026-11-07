@@ -425,15 +425,7 @@
         }
 
         .career-chat-card.is-empty .career-chat-messages {
-            position: absolute;
-            top: calc(50% - 68px);
-            right: 0;
-            left: 0;
-            flex: none;
-            max-height: 40%;
-            margin: 0;
-            padding-bottom: 0;
-            transform: translateY(-100%);
+            justify-content: flex-start;
         }
 
         .career-chat-card.is-empty #careerChatControls {
@@ -2037,7 +2029,7 @@ window.onload = async () => {
                         input.value = suggestion;
                         careerChatState.draft = suggestion;
                         saveCareerChat();
-                        input.focus();
+                        submitCareerChatAnswer();
                     });
                     suggestionList.appendChild(button);
                 });
@@ -3137,11 +3129,18 @@ try {
             console.group("🚀 Recommendation Process Trace");
             console.log("%cStep 1: Sending course interests and available grades...", "color: #3498db; font-weight: bold;");
             
-            // NOTE: Change API_URL to BACKEND_URL if that's what your code uses
+            const accessToken = sessionStorage.getItem('career_access_token');
+            if (!accessToken) {
+                throw new Error('Your secure session is missing. Please sign in again before requesting course options.');
+            }
+
             const response = await fetch(`${API_URL}/recommend`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(userData) // NOTE: use JSON.stringify(grades) if your code uses 'grades' instead of 'userData'
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify(userData)
             });
 
             // CHECKPOINT 1: Network/Server Status
