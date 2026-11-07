@@ -3696,9 +3696,19 @@ if (!data.alternative_careers || data.alternative_careers.length === 0) {
     // 2. Button Action: Download LIVE PDF
     function downloadPDF() {
         if (!currentResults) { alert("Please run the analysis first!"); return; }
-        const doc = buildMasterPDF(currentResults, false);
-        const fileName = `${currentUser.replace(/\s+/g, '_')}_Placement_Report.pdf`;
-        doc.save(fileName);
+        const button = document.getElementById("savePdfBtn");
+        if (button) button.disabled = true;
+        try {
+            if (!window.jspdf) throw new Error("PDF library is unavailable");
+            const doc = buildMasterPDF(currentResults, false);
+            const fileName = `${currentUser.replace(/\s+/g, '_')}_Placement_Report.pdf`;
+            doc.save(fileName);
+        } catch (error) {
+            console.error("Report download failed:", error);
+            alert("The report could not be downloaded. Please try again.");
+        } finally {
+            if (button) button.disabled = false;
+        }
     }
 
     // 3. Button Action: Download SAVED PDF
@@ -3712,12 +3722,19 @@ if (!data.alternative_careers || data.alternative_careers.length === 0) {
         btn.disabled = true;
         
         setTimeout(() => {
-            const doc = buildMasterPDF(aiResults, true, currentViewedReport);
-            const studentName = currentUser || "Student";
-            const fileName = `${studentName.replace(/\s+/g, '_')}_Saved_Placement_Report.pdf`;
-            doc.save(fileName);
-            btn.innerHTML = originalHtml;
-            btn.disabled = false;
+            try {
+                if (!window.jspdf) throw new Error("PDF library is unavailable");
+                const doc = buildMasterPDF(aiResults, true, currentViewedReport);
+                const studentName = currentUser || "Student";
+                const fileName = `${studentName.replace(/\s+/g, '_')}_Saved_Placement_Report.pdf`;
+                doc.save(fileName);
+            } catch (error) {
+                console.error("Report download failed:", error);
+                alert("The report could not be downloaded. Please try again.");
+            } finally {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
         }, 300);
     }
 
