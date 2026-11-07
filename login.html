@@ -143,6 +143,20 @@
             return false;
         }
 
+        function showConnectingSpinner(messageElement) {
+            if (!messageElement) return;
+            messageElement.className = "text-primary small fw-bold mt-2";
+            const spinner = document.createElement('span');
+            spinner.className = "spinner-border spinner-border-sm align-middle";
+            spinner.setAttribute('aria-hidden', "true");
+            messageElement.setAttribute('role', "status");
+            messageElement.setAttribute('aria-live', "polite");
+            const label = document.createElement('span');
+            label.className = "visually-hidden";
+            label.textContent = "Connecting to server...";
+            messageElement.replaceChildren(spinner, label);
+        }
+
         // ==========================================
         // ✨ MAGIC LINK / AUTO-VERIFY LOGIC ✨
         // ==========================================
@@ -227,8 +241,7 @@
             const originalBtnText = isLoginMode ? "Sign In" : "Register";
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processing...';
-            msg.className = "text-primary small fw-bold mt-2";
-            msg.innerText = "Connecting to server...";
+            showConnectingSpinner(msg);
 
             const endpoint = isLoginMode ? "/login" : "/register";
             const payload = isLoginMode ? { username: user, password: pass } : { name: user, password: pass, email: email };
@@ -419,10 +432,7 @@
             const btn = document.querySelector('.g_id_signin'); 
             const messageBox = document.getElementById('loginMessage');
             
-            // Tell the user to wait in case Render is asleep
-            if (messageBox) {
-                messageBox.innerText = "Connecting to server... (May take 50s if waking up)";
-            }
+            showConnectingSpinner(messageBox);
 
             try {
                 const res = await fetch(`${API_URL}/google-login`, {
