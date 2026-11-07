@@ -22,7 +22,9 @@
         const url = getUrl(input);
         const headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
         const isRecommendation = url && url.pathname.replace(/\/$/, '') === '/recommend';
-        const token = sessionStorage.getItem(TOKEN_KEY);
+        const token = localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
+        if (token && !localStorage.getItem(TOKEN_KEY)) localStorage.setItem(TOKEN_KEY, token);
+        sessionStorage.removeItem(TOKEN_KEY);
 
         if (isRecommendation) {
             if (!token) {
@@ -43,9 +45,11 @@
             try {
                 const body = await response.clone().json();
                 if (body.access_token) {
-                    sessionStorage.setItem(TOKEN_KEY, body.access_token);
-                    if (body.user && body.user.email) sessionStorage.setItem('career_user_email', body.user.email);
-                    else if (body.email) sessionStorage.setItem('career_user_email', body.email);
+                    localStorage.setItem(TOKEN_KEY, body.access_token);
+                    if (body.user && body.user.email) localStorage.setItem('career_user_email', body.user.email);
+                    else if (body.email) localStorage.setItem('career_user_email', body.email);
+                    sessionStorage.removeItem(TOKEN_KEY);
+                    sessionStorage.removeItem('career_user_email');
                 }
             } catch (error) {
                 console.warn('Could not read sign-in token response.', error);
@@ -53,7 +57,10 @@
         }
 
         if (isRecommendation && response.status === 401) {
+            localStorage.removeItem(TOKEN_KEY);
+            localStorage.removeItem('career_user_email');
             sessionStorage.removeItem(TOKEN_KEY);
+            sessionStorage.removeItem('career_user_email');
         } else if (isRecommendation && response.status === 402) {
             try {
                 const body = await response.clone().json();

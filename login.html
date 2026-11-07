@@ -29,6 +29,11 @@
             <p class="text-muted small" id="authSubtitle">Sign in to your AI Career Dashboard</p>
         </div>
 
+        <div id="activeSessionNotice" class="alert alert-info small text-start" role="status" style="display: none;">
+            <p id="activeSessionMessage" class="mb-2"></p>
+            <button type="button" class="btn btn-sm btn-outline-primary" onclick="switchAccount()">Sign in with another account</button>
+        </div>
+
         <form id="authForm" onsubmit="handleAuth(event)">
             <div class="form-floating mb-3 text-start">
                 <input type="text" id="loginUsername" class="form-control" placeholder="Username or email" required>
@@ -133,15 +138,47 @@
         let isLoginMode = true;
         let pendingVerificationEmail = ""; 
 
-        function storeAccessToken(data) {
-            if (typeof data.access_token === "string" && data.access_token.trim()) {
-                sessionStorage.setItem('career_access_token', data.access_token);
-                sessionStorage.setItem('career_user_email', data.user?.email || data.email || "");
-                return true;
+        function getAccessToken() {
+            let token = localStorage.getItem('career_access_token');
+            if (!token) {
+                token = sessionStorage.getItem('career_access_token');
+                if (token) localStorage.setItem('career_access_token', token);
             }
             sessionStorage.removeItem('career_access_token');
+
+            const email = localStorage.getItem('career_user_email') || sessionStorage.getItem('career_user_email');
+            if (email) localStorage.setItem('career_user_email', email);
             sessionStorage.removeItem('career_user_email');
+            return token;
+        }
+
+        function clearAccessToken() {
+            localStorage.removeItem('career_access_token');
+            localStorage.removeItem('career_user_email');
+            sessionStorage.removeItem('career_access_token');
+            sessionStorage.removeItem('career_user_email');
+        }
+
+        function storeAccessToken(data) {
+            if (typeof data.access_token === "string" && data.access_token.trim()) {
+                localStorage.setItem('career_access_token', data.access_token);
+                localStorage.setItem('career_user_email', data.user?.email || data.email || "");
+                sessionStorage.removeItem('career_access_token');
+                sessionStorage.removeItem('career_user_email');
+                return true;
+            }
+            clearAccessToken();
             return false;
+        }
+
+        function switchAccount() {
+            clearAccessToken();
+            localStorage.removeItem('user_name');
+            localStorage.removeItem('user_email');
+            document.getElementById('activeSessionNotice').style.display = 'none';
+            const message = document.getElementById('loginMessage');
+            message.className = "text-success small fw-bold mt-2";
+            message.innerText = "Signed out. Sign in with another account.";
         }
 
         function showConnectingSpinner(messageElement) {
@@ -189,12 +226,19 @@
                 // Clean URL
                 window.history.replaceState({}, document.title, window.location.pathname);
             } 
-            // 2. ONLY REDIRECT IF THERE IS NO MAGIC LINK
-            else if (
-                localStorage.getItem('user_name')
-                && sessionStorage.getItem('career_access_token')
-            ) {
-                window.location.href = "index.html";
+            // Keep the sign-in form available so another person can switch accounts on this device.
+            else if (getAccessToken()) {
+                const activeEmail = localStorage.getItem('user_email')
+                    || localStorage.getItem('career_user_email')
+                    || localStorage.getItem('user_name')
+                    || "another account";
+                document.getElementById('activeSessionMessage').textContent =
+                    `This device is signed in as ${activeEmail}. Signing in below will switch the active account.`;
+                document.getElementById('activeSessionNotice').style.display = 'block';
+            } else {
+                clearAccessToken();
+                localStorage.removeItem('user_name');
+                localStorage.removeItem('user_email');
             }
         });
         function toggleAuthMode(event) {
@@ -357,9 +401,13 @@
                 }));
 
                 if (response.ok) {
+                    if (!storeAccessToken(data)) {
+                        messageEl.className = "text-danger small fw-bold mt-3";
+                        messageEl.textContent = "The account was verified, but the server did not issue a secure session token. Please sign in.";
+                        return;
+                    }
                     messageEl.className = "text-success small fw-bold mt-3";
                     messageEl.textContent = "Account verified! Logging you in...";
-                    storeAccessToken(data);
                     
                     // --- AUTO-LOGIN TRIGGER ---
                     localStorage.setItem('user_name', data.user.name); 
@@ -472,7 +520,9 @@
                 const data = await res.json();
                 
                 if (res.ok) {
-                    storeAccessToken(data);
+                    if (!storeAccessToken(data)) {
+                        throw new Error("The server did not issue a secure session token. Please try again.");
+                    }
                     // Save user data
                     localStorage.setItem('user_name', data.name);
                     localStorage.setItem('user_email', data.email);
@@ -485,7 +535,7 @@
             } catch (err) {
                 console.error("Error connecting to server:", err);
                 if (messageBox) {
-                    messageBox.innerText = "Login error: Could not connect to the server. (It might be waking up!)";
+                    messageBox.innerText = err.message || "Login error: Could not connect to the server. (It might be waking up!)";
                 }
             } finally {
                 // ALWAYS run this, no matter if it succeeded or failed!
