@@ -337,6 +337,24 @@
             box-shadow: none;
         }
 
+        .career-chat-history-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        #careerChatHistory {
+            min-width: 0;
+            flex: 1 1 auto;
+        }
+
+        #careerChatDeleteButton {
+            width: 36px;
+            height: 36px;
+            flex: 0 0 36px;
+            padding: 0;
+        }
+
         .sidebar {
             transition: transform 0.3s ease-in-out;
         }
@@ -514,25 +532,7 @@
         }
 
         .career-chat-card.is-empty .career-chat-messages {
-            position: absolute;
-            top: calc(50% - 68px);
-            right: 0;
-            left: 0;
-            flex: none;
-            max-height: 40%;
-            margin: 0;
-            padding-bottom: 0;
-            transform: translateY(-100%);
-        }
-
-        .career-chat-card.is-empty #careerChatControls {
-            position: absolute;
-            top: 50%;
-            right: 0;
-            left: 0;
-            width: 100%;
-            margin: 0;
-            transform: translateY(-50%);
+            justify-content: center;
         }
 
         .career-chat-card.is-empty .career-chat-message.assistant {
@@ -637,6 +637,23 @@
             gap: 8px;
             max-width: min(96%, 860px);
             margin-left: 4px;
+        }
+
+        .career-chat-explore-options {
+            align-self: flex-start;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+            gap: 8px;
+            width: min(100%, 860px);
+            padding: 14px;
+            border: 1px solid var(--career-border);
+            border-radius: 14px;
+            background: #fff;
+        }
+
+        .career-chat-explore-options strong {
+            grid-column: 1 / -1;
+            color: var(--career-text);
         }
 
         .career-chat-suggestion {
@@ -1070,7 +1087,12 @@
                     <i class="fas fa-plus me-2"></i>New chat
                 </button>
                 <label class="sidebar-conversations-label" for="careerChatHistory">Conversations</label>
-                <select id="careerChatHistory" class="form-select form-select-sm" aria-label="Saved conversations" onchange="switchCareerChat(this.value); closeSidebarOnMobile();"></select>
+                <div class="career-chat-history-controls">
+                    <select id="careerChatHistory" class="form-select form-select-sm" aria-label="Saved conversations" onchange="switchCareerChat(this.value); closeSidebarOnMobile();"></select>
+                    <button id="careerChatDeleteButton" class="btn btn-sm btn-outline-danger" type="button" aria-label="Delete selected conversation" title="Delete selected conversation" onclick="deleteSelectedCareerChat()" style="display: none;">
+                        <i class="fas fa-trash" aria-hidden="true"></i>
+                    </button>
+                </div>
             </li>
         </ul>
 
@@ -1117,6 +1139,7 @@
 
                     <div id="careerChatMessages" class="career-chat-messages" role="log" aria-live="polite" aria-relevant="additions text">
                         <div id="careerChatMessageList"></div>
+                        <div id="careerChatExploreOptions" class="career-chat-explore-options" style="display: none;"></div>
                         <section id="careerGradeStage" class="career-grade-summary" aria-label="Grade summary" style="display: none;">
                             <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
                                 <div class="career-grade-summary-heading mb-0">
@@ -1489,6 +1512,33 @@
         );
     }
 
+    function initializeCareerChatPullToRefresh() {
+        const messageLog = document.getElementById('careerChatMessages');
+        if (!messageLog || messageLog.dataset.pullToRefreshReady === "true") return;
+        messageLog.dataset.pullToRefreshReady = "true";
+        let touchStartY = null;
+        const refreshDistance = 90;
+
+        messageLog.addEventListener("touchstart", event => {
+            touchStartY = event.touches.length === 1 && messageLog.scrollTop <= 0
+                ? event.touches[0].clientY
+                : null;
+        }, { passive: true });
+        messageLog.addEventListener("touchmove", event => {
+            if (touchStartY === null || event.touches.length !== 1 || messageLog.scrollTop > 0) return;
+            if (event.touches[0].clientY - touchStartY >= refreshDistance) {
+                touchStartY = null;
+                window.location.reload();
+            }
+        }, { passive: true });
+        messageLog.addEventListener("touchend", () => {
+            touchStartY = null;
+        }, { passive: true });
+        messageLog.addEventListener("touchcancel", () => {
+            touchStartY = null;
+        }, { passive: true });
+    }
+
     window.addEventListener("resize", updateCareerChatViewportHeight);
     window.visualViewport?.addEventListener("resize", updateCareerChatViewportHeight);
     
@@ -1543,6 +1593,7 @@ window.onload = async () => {
         document.getElementById("sidebar-user").innerText = currentUser;
         await loadDataConsent();
         initializeCareerChat();
+        initializeCareerChatPullToRefresh();
         if (pendingConsentNotice) {
             showCareerChatNotice(pendingConsentNotice);
             pendingConsentNotice = "";
@@ -1989,10 +2040,12 @@ window.onload = async () => {
 
     function renderCareerChatHistory() {
         const select = document.getElementById('careerChatHistory');
+        const deleteButton = document.getElementById('careerChatDeleteButton');
         if (!select) return;
         if (!dataConsent.personalization) {
             select.replaceChildren();
             select.style.display = "none";
+            if (deleteButton) deleteButton.style.display = "none";
             return;
         }
         const conversations = readSavedCareerChats();
@@ -2008,6 +2061,13 @@ window.onload = async () => {
             });
         }
         select.replaceChildren();
+        const activeConversationIsSaved = conversations.some(item => item.id === careerChatState?.id);
+        if (!activeConversationIsSaved && conversations.length) {
+            const placeholder = document.createElement('option');
+            placeholder.value = "";
+            placeholder.textContent = "Choose a previous chat";
+            select.appendChild(placeholder);
+        }
         conversations.forEach(conversation => {
             const option = document.createElement('option');
             option.value = conversation.id;
@@ -2016,6 +2076,13 @@ window.onload = async () => {
         });
         select.value = careerChatState?.id || "";
         select.style.display = conversations.length ? "block" : "none";
+        if (deleteButton) {
+            deleteButton.style.display = select.value ? "inline-flex" : "none";
+            deleteButton.disabled = Boolean(
+                careerChatState?.id === select.value
+                && (careerChatState.pending || careerChatRecommendationPending)
+            );
+        }
     }
 
     function renderCareerRecommendationCard(container, result) {
@@ -2161,7 +2228,7 @@ window.onload = async () => {
             renderCareerChatHistory();
             return;
         }
-        careerChatState.messages = careerChatState.messages.slice(-50);
+        careerChatState.messages = careerChatState.messages.slice(-100);
         careerChatState.updatedAt = Date.now();
         try {
             localStorage.setItem(`${currentUser}_career_chat`, JSON.stringify(careerChatState));
@@ -2199,6 +2266,49 @@ window.onload = async () => {
         document.getElementById('profileFormContainer').style.display = "block";
         renderCareerChat();
         renderCareerChatHistory();
+    }
+
+    function deleteSelectedCareerChat() {
+        if (!dataConsent.personalization || !currentUser) return;
+        const select = document.getElementById('careerChatHistory');
+        const conversationId = select?.value;
+        const conversations = readSavedCareerChats();
+        const conversation = conversations.find(item => item.id === conversationId);
+        if (!conversation) {
+            showCareerChatNotice("Choose a saved conversation to delete.");
+            return;
+        }
+        if (
+            careerChatState?.id === conversationId
+            && (careerChatState.pending || careerChatRecommendationPending)
+        ) {
+            showCareerChatNotice("Wait for the current response to finish before deleting this conversation.");
+            return;
+        }
+        if (!confirm(`Delete “${conversation.title || "this conversation"}”? This cannot be undone.`)) return;
+
+        try {
+            const remaining = conversations.filter(item => item.id !== conversationId);
+            localStorage.setItem(`${currentUser}_career_chats`, JSON.stringify(remaining));
+            if (careerChatState?.id === conversationId) {
+                localStorage.removeItem(`${currentUser}_career_chat`);
+                careerChatState = newCareerChatState();
+                careerChatState.messages.push(careerChatWelcomeMessage());
+                careerChatState.awaitingAssistantName = true;
+                careerChatAttachments = [];
+                document.getElementById('interestArea').value = "";
+                document.getElementById('profileSummaryContainer').style.display = "none";
+                document.getElementById('profileFormContainer').style.display = "block";
+                saveCareerChat();
+                renderCareerChat();
+            } else {
+                renderCareerChatHistory();
+            }
+            showCareerChatNotice("Conversation deleted.");
+        } catch (error) {
+            console.error("Could not delete the saved conversation.", error);
+            showCareerChatNotice("This conversation could not be deleted from this browser. Please try again.");
+        }
     }
 
     function currentCareerQuestion() {
@@ -2278,8 +2388,9 @@ window.onload = async () => {
                             return;
                         }
                         const input = document.getElementById('careerChatInput');
-                        input.value = suggestion;
-                        careerChatState.draft = suggestion;
+                        const studentRequest = makeCareerChatSuggestionStudentVoice(suggestion);
+                        input.value = studentRequest;
+                        careerChatState.draft = studentRequest;
                         saveCareerChat();
                         input.focus();
                     });
@@ -2288,6 +2399,38 @@ window.onload = async () => {
                 if (suggestionList.childElementCount) messages.appendChild(suggestionList);
             }
         });
+        const exploreOptions = document.getElementById('careerChatExploreOptions');
+        exploreOptions.replaceChildren();
+        const savedInterest = careerChatState.answers.interest.trim();
+        const exploreChoices = careerChatState.exploreOptionsOpen
+            ? [
+                ...(savedInterest && !isCareerChatGreeting(savedInterest)
+                    ? [{ label: "Explore what I told you", interest: savedInterest }]
+                    : []),
+                { label: "Nursing and healthcare", interest: "Nursing and healthcare" },
+                { label: "Computing and information technology", interest: "Computing and information technology" },
+                { label: "Business and finance", interest: "Business and finance" },
+                { label: "Engineering and construction", interest: "Engineering and construction" },
+                { label: "Education and teaching", interest: "Education and teaching" },
+                { label: "Agriculture and environmental studies", interest: "Agriculture and environmental studies" }
+            ]
+            : [];
+        if (exploreChoices.length) {
+            const heading = document.createElement('strong');
+            heading.textContent = "Choose an area to explore";
+            exploreOptions.appendChild(heading);
+            exploreChoices.forEach(choice => {
+                const button = document.createElement('button');
+                button.type = "button";
+                button.className = "career-chat-suggestion";
+                button.textContent = choice.label;
+                button.addEventListener('click', () => selectCareerChatExploreOption(choice.interest));
+                exploreOptions.appendChild(button);
+            });
+            exploreOptions.style.display = "grid";
+        } else {
+            exploreOptions.style.display = "none";
+        }
         messageLog.scrollTop = messageLog.scrollHeight;
 
         const isGradeStep = step === 5;
@@ -2341,17 +2484,31 @@ window.onload = async () => {
         document.getElementById('careerChatVoiceButton').disabled = isThinking;
         document.getElementById('careerChatAttachButton').disabled = isThinking;
         const continuePrompt = document.getElementById('careerChatContinuePrompt');
-        const shouldOfferGrades = step === 0
+        const canExplore = step === 0;
+        const shouldOfferGrades = canExplore
             && Boolean(careerChatState.answers.interest)
             && gradeCount < 7;
-        continuePrompt.style.display = shouldOfferGrades ? "flex" : "none";
+        continuePrompt.style.display = canExplore ? "flex" : "none";
         document.getElementById('careerChatContinueButton').textContent = "Share grades (optional)";
         document.getElementById('careerChatContinueText').textContent = shouldOfferGrades
             ? "If you have exam grades, share them to check your eligibility. Or explore courses and their entry requirements now."
-            : "";
-        document.getElementById('careerChatExploreButton').style.display = shouldOfferGrades ? "inline-block" : "none";
-        document.getElementById('careerChatExploreButton').disabled = isThinking;
-        document.getElementById('careerChatExploreButton').setAttribute('aria-busy', String(isThinking));
+            : "Explore course and career areas, or tell me what you’re interested in. Grades are optional.";
+        document.getElementById('careerChatExploreButton').style.display = canExplore ? "inline-block" : "none";
+        const exploreButton = document.getElementById('careerChatExploreButton');
+        exploreButton.disabled = isThinking;
+        exploreButton.setAttribute('aria-busy', String(isThinking));
+        exploreButton.replaceChildren();
+        if (careerChatRecommendationPending) {
+            const spinner = document.createElement('span');
+            spinner.className = "spinner-border spinner-border-sm me-1";
+            spinner.setAttribute('aria-hidden', "true");
+            exploreButton.append(spinner, document.createTextNode("Finding course options…"));
+        } else {
+            const arrow = document.createElement('i');
+            arrow.className = "fas fa-arrow-right ms-1";
+            arrow.setAttribute('aria-hidden', "true");
+            exploreButton.append(document.createTextNode("Explore options now "), arrow);
+        }
         document.getElementById('careerChatContinueButton').style.display = shouldOfferGrades ? "inline-block" : "none";
         document.getElementById('careerChatContinueButton').disabled = isThinking;
         const hasSavedProfile = dataConsent.personalization
@@ -2426,6 +2583,67 @@ window.onload = async () => {
         return selected.reverse();
     }
 
+    function getCareerChatMemory() {
+        const messages = careerChatState.messages;
+        const recentMessages = getCareerChatMessages();
+        const olderMessages = messages.slice(0, Math.max(0, messages.length - recentMessages.length));
+        const memory = [];
+        if (careerChatState.assistantName && careerChatState.assistantName !== "CareerPath AI") {
+            memory.push(`The student calls the guide ${careerChatState.assistantName}.`);
+        }
+        const answers = careerChatState.answers || {};
+        if (answers.interest) memory.push(`Study or career interest mentioned: ${answers.interest}`);
+        if (answers.motivation) memory.push(`What motivates the student: ${answers.motivation}`);
+        if (Array.isArray(answers.priorities) && answers.priorities.length) {
+            memory.push(`Student priorities: ${answers.priorities.join(", ")}`);
+        }
+        if (answers.preferredLevel && answers.preferredLevel !== "Not sure yet") {
+            memory.push(`Preferred study level: ${answers.preferredLevel}`);
+        }
+        if (answers.constraints) memory.push(`Practical preferences: ${answers.constraints}`);
+        const grades = Object.entries(answers.grades || {})
+            .map(([subject, grade]) => `${careerGradeSubjects.find(item => item.key === subject)?.label || subject}: ${grade}`)
+            .join(", ");
+        if (grades) memory.push(`Grades the student shared: ${grades}`);
+        if (olderMessages.length) {
+            memory.push(
+                "Earlier conversation for continuity:\n"
+                + olderMessages.map(message =>
+                    `${message.role === "user" ? "Student" : careerChatState.assistantName}: ${message.text}`
+                ).join("\n")
+            );
+        }
+        return memory.join("\n").slice(0, 6000);
+    }
+
+    function getCareerChatStudentContext() {
+        const assistantName = (careerChatState.assistantName || "").trim().toLocaleLowerCase();
+        return careerChatState.messages
+            .filter(message => message.role === "user")
+            .map(message => message.text.trim())
+            .filter(text =>
+                !/^(?:Maths|English|Kiswahili|Biology|Physics|Chemistry|History|CRE|Geography|Business|Agriculture|Music|Computer Studies|Home Science):\s/i.test(text)
+                && !/^I did not take /.test(text)
+                && !/^(?:please\s+)?(?:call me|call you|call yourself|you can call me|i(?:['’]d| would) like to call you|i want to call you|i(?:['’]d| would) like to name you|i want to name you|my name for you is|your name is)\b/i.test(text)
+                && !(assistantName && text.toLocaleLowerCase() === assistantName && careerChatState.answers.interest.trim().toLocaleLowerCase() !== assistantName)
+            );
+    }
+
+    function makeCareerChatSuggestionStudentVoice(suggestion) {
+        const text = suggestion.trim().replace(/[?!.]+$/, "");
+        const invitation = text.match(/^(?:would you like|do you want|would you want)\s+(.+)$/i);
+        if (!invitation) return text;
+        let request = invitation[1].replace(/^me to\s+/i, "").replace(/^to\s+/i, "");
+        if (/^(?:an? |some |more |quick |brief |detailed |a quick |a brief )?(?:overview|summary|explanation|details?|guidance|information|tips|examples?|comparison|help)\b/i.test(request)) {
+            return `Please give me ${request}.`;
+        }
+        request = request
+            .replace(/^dive deeper into\s+/i, "explain ")
+            .replace(/^know more about\s+/i, "tell me more about ")
+            .replace(/^hear about\s+/i, "tell me about ");
+        return `Please ${request}.`;
+    }
+
     function getCareerAssistantName(message) {
         let name = message.trim();
         const namedPattern = /^(?:please\s+)?(?:call me|call you|call yourself|you can call me|i(?:['’]d| would) like to call you|i want to call you|i(?:['’]d| would) like to name you|i want to name you|my name for you is|your name is)\s+(.+)$/i;
@@ -2440,6 +2658,10 @@ window.onload = async () => {
         }
         name = name.replace(/[.!?]+$/, "").trim();
         return /^[\p{L}\p{N}][\p{L}\p{N} .'-]{0,31}$/u.test(name) ? name : "";
+    }
+
+    function isCareerChatGreeting(message) {
+        return /^(?:hi|hello|hey|hiya|howdy|good morning|good afternoon|good evening)(?: there)?[.!?,\s]*$/i.test(message.trim());
     }
 
     async function submitCareerChatAnswer() {
@@ -2493,6 +2715,7 @@ window.onload = async () => {
         if (
             value
             && !careerChatState.answers.interest
+            && !isCareerChatGreeting(value)
             && (!isNameRequest || (choseAssistantName && nameHasAdditionalDetails))
             && !careerChatState.awaitingAssistantName
             && !isStartingAction
@@ -2516,6 +2739,7 @@ window.onload = async () => {
                 const formData = new FormData();
                 formData.append("messages", JSON.stringify(getCareerChatMessages()));
                 formData.append("assistant_name", careerChatState.assistantName || "CareerPath AI");
+                formData.append("conversation_memory", getCareerChatMemory());
                 submittedAttachments.forEach(file => formData.append("attachments", file));
                 response = await fetch(`${API_URL}/chat`, { method: "POST", body: formData });
             } else {
@@ -2524,7 +2748,8 @@ window.onload = async () => {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         messages: getCareerChatMessages(),
-                        assistant_name: careerChatState.assistantName || "CareerPath AI"
+                        assistant_name: careerChatState.assistantName || "CareerPath AI",
+                        conversation_memory: getCareerChatMemory()
                     })
                 });
             }
@@ -2626,10 +2851,23 @@ window.onload = async () => {
     }
 
     function exploreCareerOptions() {
-        if (!careerChatState.answers.interest.trim()) {
-            showCareerChatNotice("Tell me what course, career, or subject you’d like to explore first. Grades are optional.");
-            return;
-        }
+        if (careerChatState.pending || careerChatRecommendationPending) return;
+        careerChatState.exploreOptionsOpen = true;
+        document.getElementById('careerChatNotice').style.display = "none";
+        renderCareerChat();
+    }
+
+    function selectCareerChatExploreOption(option) {
+        if (careerChatState.pending || careerChatRecommendationPending) return;
+        careerChatState.exploreOptionsOpen = false;
+        careerChatState.answers.interest = option;
+        careerChatState.messages.push({
+            role: "user",
+            text: `I want to explore ${option}.`
+        });
+        document.getElementById('interestArea').value = option;
+        saveCareerChat();
+        renderCareerChat();
         previewProfile();
         getRecommendations({ presentInChat: true });
     }
@@ -2837,13 +3075,7 @@ window.onload = async () => {
             priorities: Array.isArray(answers.priorities) ? answers.priorities : [],
             preferred_level: answers.preferredLevel === "Not sure yet" ? "" : answers.preferredLevel || "",
             constraints: answers.constraints || "",
-            chat_history: careerChatState.messages
-                .filter(message => message.role === "user")
-                .map(message => message.text)
-                .filter(text => !/^(?:Maths|English|Kiswahili|Biology|Physics|Chemistry|History|CRE|Geography|Business|Agriculture|Music|Computer Studies|Home Science):\s/.test(text))
-                .filter(text => !/^I did not take /.test(text))
-                .join("\n")
-                .slice(-6000)
+            chat_history: getCareerChatStudentContext().join("\n").slice(-6000)
         } : {};
         const profileData = {
             interest,
@@ -3336,13 +3568,7 @@ window.onload = async () => {
         const answers = careerChatState?.answers || {};
         const interest = String(answers.interest || document.getElementById('interestArea').value || "").trim();
         const subjects = answers.grades && typeof answers.grades === "object" ? { ...answers.grades } : {};
-        const chatHistory = (careerChatState?.messages || [])
-            .filter(message => message.role === "user")
-            .map(message => message.text)
-            .filter(text => !/^(?:Maths|English|Kiswahili|Biology|Physics|Chemistry|History|CRE|Geography|Business|Agriculture|Music|Computer Studies|Home Science):\s/.test(text))
-            .filter(text => !/^I did not take /.test(text))
-            .join("\n")
-            .slice(-6000);
+        const chatHistory = getCareerChatStudentContext().join("\n").slice(-6000);
         const conversationContext = {
             motivation: answers.motivation || "",
             priorities: Array.isArray(answers.priorities) ? answers.priorities : [],
