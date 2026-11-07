@@ -1,4 +1,4 @@
-const CACHE_NAME = 'career-v16-secure-release-all';
+const CACHE_NAME = 'career-v17-persistent-multi-account-auth';
 const ASSETS = [
     './',
     './index.html',
