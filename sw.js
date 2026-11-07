@@ -1,10 +1,10 @@
-const CACHE_NAME = 'career-v13-careerpath-logo';
+const CACHE_NAME = 'career-v14-exact-logo';
 const ASSETS = [
     './',
     './index.html',
     './login.html',
     './manifest.json',
-    './icons/icon-192x192.png',
+    './icons/careerpath-logo.png',
     'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css',
     'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js'
 ];
