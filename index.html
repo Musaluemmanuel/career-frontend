@@ -1486,6 +1486,34 @@ window.onload = async () => {
         renderCareerChatHistory();
     }
 
+    function readDeviceDataConsent() {
+        const key = `${currentUser}_data_consent`;
+        try {
+            const saved = JSON.parse(localStorage.getItem(key) || "null");
+            if (
+                saved
+                && typeof saved.personalization === "boolean"
+                && typeof saved.improvement === "boolean"
+            ) {
+                return saved;
+            }
+        } catch (error) {
+            console.warn('Could not read saved data choices from this browser.', error);
+        }
+        return null;
+    }
+
+    function saveDeviceDataConsent(personalization, improvement) {
+        const key = `${currentUser}_data_consent`;
+        try {
+            localStorage.setItem(key, JSON.stringify({ personalization, improvement }));
+            return true;
+        } catch (error) {
+            console.warn('Could not save data choices in this browser.', error);
+            return false;
+        }
+    }
+
     async function loadDataConsent() {
         const token = sessionStorage.getItem('career_access_token');
         try {
@@ -1501,6 +1529,7 @@ window.onload = async () => {
                     improvement: result.improvement === true,
                     recorded: true
                 };
+                saveDeviceDataConsent(dataConsent.personalization, dataConsent.improvement);
                 setDataConsentFields(dataConsent);
                 updateCareerChatPrivacyLabel();
                 return;
@@ -1508,6 +1537,18 @@ window.onload = async () => {
         } catch (error) {
             console.error('Could not load saved data choices.', error);
             showDataConsentStatus('We could not load or save your preferences right now. Optional use stays off unless your choices can be saved. You can continue with optional use off.');
+        }
+
+        const deviceConsent = readDeviceDataConsent();
+        if (deviceConsent) {
+            dataConsent = {
+                personalization: deviceConsent.personalization,
+                improvement: deviceConsent.improvement,
+                recorded: false
+            };
+            setDataConsentFields(dataConsent);
+            updateCareerChatPrivacyLabel();
+            return;
         }
 
         dataConsent = { personalization: false, improvement: false, recorded: false };
@@ -1551,6 +1592,7 @@ window.onload = async () => {
                 improvement: result.improvement === true,
                 recorded: true
             };
+            saveDeviceDataConsent(dataConsent.personalization, dataConsent.improvement);
             setDataConsentFields(dataConsent);
             updateCareerChatPrivacyLabel();
             bootstrap.Modal.getInstance(document.getElementById('dataConsentModal')).hide();
@@ -1561,6 +1603,22 @@ window.onload = async () => {
             return true;
         } catch (error) {
             console.error('Could not save data choices.', error);
+            if (saveDeviceDataConsent(next.personalization, next.improvement)) {
+                dataConsent = {
+                    personalization: next.personalization,
+                    improvement: next.improvement,
+                    recorded: false
+                };
+                setDataConsentFields(dataConsent);
+                updateCareerChatPrivacyLabel();
+                bootstrap.Modal.getInstance(document.getElementById('dataConsentModal')).hide();
+                if (initialConsentResolver) {
+                    initialConsentResolver();
+                    initialConsentResolver = null;
+                }
+                showDataConsentStatus('Your choices were saved on this device, but account preferences could not be reached.');
+                return true;
+            }
             if (
                 allowOfflineOptOut
                 && !dataConsent.recorded
