@@ -1,4 +1,4 @@
-const CACHE_NAME = 'career-v14-exact-logo';
+const CACHE_NAME = 'career-v15-exact-logo-all';
 const ASSETS = [
     './',
     './index.html',
