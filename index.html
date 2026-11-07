@@ -1834,6 +1834,24 @@ window.onload = async () => {
         select.style.display = conversations.length ? "block" : "none";
     }
 
+    function downloadCareerChatReport(result, button = null) {
+        const originalHtml = button?.innerHTML;
+        if (button) { button.disabled = true; button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating PDF...'; }
+        try {
+            if (!window.jspdf) throw new Error("PDF library is unavailable");
+            const doc = buildMasterPDF(result, false);
+            const path = result.specific_course || result.course || result.ai_role || "Career_Report";
+            const safePath = String(path).replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "").slice(0, 50) || "Career_Report";
+            const studentName = String(currentUser || "Student").replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "") || "Student";
+            doc.save(`${studentName}_${safePath}.pdf`);
+        } catch (error) {
+            console.error("Chat report download failed:", error);
+            alert("The report could not be downloaded. Please try again.");
+        } finally {
+            if (button) { button.disabled = false; button.innerHTML = originalHtml; }
+        }
+    }
+
     function renderCareerRecommendationCard(container, result) {
         const card = document.createElement('section');
         card.className = "career-chat-result";
@@ -1852,6 +1870,16 @@ window.onload = async () => {
             course.append(document.createTextNode(` · ${result.points}/84 points`));
         }
         card.appendChild(course);
+
+        const actions = document.createElement('div');
+        actions.className = "d-flex gap-2 mt-3";
+        const download = document.createElement('button');
+        download.type = "button";
+        download.className = "btn btn-primary btn-sm rounded-pill";
+        download.innerHTML = '<i class="fas fa-file-pdf me-2"></i>Download report PDF';
+        download.addEventListener('click', () => downloadCareerChatReport(result, download));
+        actions.appendChild(download);
+        card.appendChild(actions);
 
         const universities = Array.isArray(result.universities) ? result.universities : [];
         if (!universities.length) {
@@ -1931,6 +1959,7 @@ window.onload = async () => {
     function addCareerRecommendationToChat(result) {
         const universities = Array.isArray(result.universities) ? result.universities : [];
         const savedResult = {
+            ...result,
             course: typeof result.specific_course === "string" ? result.specific_course : "",
             points: result.validated_points ?? result.points,
             universities: universities.slice(0, 8).map(university => ({
