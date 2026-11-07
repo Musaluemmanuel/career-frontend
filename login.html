@@ -184,9 +184,15 @@
                 // Clean URL
                 window.history.replaceState({}, document.title, window.location.pathname);
             } 
-            // 2. ONLY REDIRECT IF THERE IS NO MAGIC LINK
-            else if (localStorage.getItem('user_name')) {
+            // 2. Redirect an existing signed-in session only when its bearer token is present.
+            else if (
+                localStorage.getItem('user_name')
+                && sessionStorage.getItem('career_access_token')
+            ) {
                 window.location.href = "index.html";
+            } else {
+                sessionStorage.removeItem('career_access_token');
+                sessionStorage.removeItem('career_user_email');
             }
         });
         function toggleAuthMode(event) {
