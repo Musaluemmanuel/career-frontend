@@ -40,6 +40,14 @@ changes before preparing a deployment.
 The frontend loads Bootstrap, Font Awesome, Google Fonts, and other browser
 libraries from CDNs, so those resources require an internet connection.
 
+## Branding assets
+
+The official CareerPath AI image is stored in
+[`icons/careerpath-logo.png`](icons/careerpath-logo.png). Login, dashboard,
+chat, reports, manifest, favicon, and Apple touch-icon references use this
+asset. When replacing the image, update all PWA icon sizes and increment the
+service-worker `CACHE_NAME` so browsers invalidate the previous cached logo.
+
 ## Configuration and deployment
 
 The static pages contain the API base URL in their source. Keep it pointed at
@@ -82,6 +90,8 @@ On 2026-11-07, the changes in this repository were checked as follows:
 | --- | --- |
 | Parse the page's inline JavaScript with Node.js `new Function(...)` | Passed: 1 inline script parsed. |
 | `node --check auth-bridge.js` | Passed. |
+| Exact logo image hash in both frontend icon directories | Passed: both SHA-256 hashes match the attached source image. |
+| Live login and dashboard logo references | Passed: Vercel serves `careerpath-logo.png?v=20261107-7` in login and chat branding. |
 | Browser-render the recommendation card with no verified institution results | Passed: the explicit “no official course page verified” message was shown. |
 | `git diff --check` | Passed for the frontend and backend working trees. |
 
