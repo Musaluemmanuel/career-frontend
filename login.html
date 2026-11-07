@@ -263,13 +263,16 @@
                     if (isLoginMode) {
                         // LOGIN SUCCESS
                         const hasAccessToken = storeAccessToken(data);
+                        if (!hasAccessToken) {
+                            msg.className = "text-danger small fw-bold mt-2";
+                            msg.innerText = "The server accepted the sign-in but did not issue a secure session token. Please try again; analysis is unavailable until a token is issued.";
+                            return;
+                        }
                         msg.className = "text-success small fw-bold mt-2";
-                        msg.innerText = hasAccessToken
-                            ? "Success! Redirecting..."
-                            : "Signed in. Some server features may be unavailable until the connection is restored.";
+                        msg.innerText = "Success! Redirecting...";
                         localStorage.setItem('user_name', data.user.name); // Using verified name from backend
                         localStorage.setItem('user_email', data.user.email);
-                        setTimeout(() => { window.location.href = "index.html"; }, hasAccessToken ? 500 : 1200);
+                        setTimeout(() => { window.location.href = "index.html"; }, 500);
                     } else {
                         // REGISTRATION SUCCESS -> SHOW VERIFICATION
                         pendingVerificationEmail = email; 

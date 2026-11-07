@@ -27,7 +27,7 @@
         if (isRecommendation) {
             if (!token) {
                 return new Response(JSON.stringify({
-                    error: 'The server session for recommendations is unavailable. Your dashboard session is still open; please try again after the server connection is restored.',
+                    error: 'Your secure server session is missing. Please sign in again to run an analysis; your saved chat is still available.',
                     code: 'authentication_required'
                 }), { status: 401, headers: { 'Content-Type': 'application/json' } });
             }

@@ -2016,7 +2016,9 @@ window.onload = async () => {
         if (!universities.length) {
             const empty = document.createElement('p');
             empty.className = "small text-secondary mb-0";
-            empty.textContent = "No specific university matches were returned.";
+            empty.textContent = typeof result.institutionMatchMessage === "string" && result.institutionMatchMessage.trim()
+                ? result.institutionMatchMessage
+                : "No official institution course page was verified, so no university is shown as a confirmed match.";
             card.appendChild(empty);
         }
         universities.forEach(university => {
@@ -2042,7 +2044,7 @@ window.onload = async () => {
                 heading.className = "small d-block mb-2";
                 heading.textContent = hasGradesToCompare
                     ? "Entry requirements (compared where possible)"
-                    : "Typical entry requirements (eligibility not checked)";
+                    : "Admission requirements (check the official course page)";
                 requirementSection.appendChild(heading);
                 requirements.forEach(requirement => {
                     const row = document.createElement('p');
@@ -2092,6 +2094,9 @@ window.onload = async () => {
         const savedResult = {
             course: typeof result.specific_course === "string" ? result.specific_course : "",
             points: result.validated_points ?? result.points,
+            institutionMatchMessage: typeof result.institution_match_message === "string"
+                ? result.institution_match_message
+                : "",
             universities: universities.slice(0, 8).map(university => ({
                 name: typeof university.name === "string" ? university.name : "Institution",
                 reason: typeof university.reason === "string" ? university.reason : "",
@@ -2113,7 +2118,7 @@ window.onload = async () => {
         };
         careerChatState.messages.push({
             role: "assistant",
-            text: `I’ve added your course and institution matches to our conversation, ${currentUser}. Course: ${savedResult.course || "Course options"}. Institutions: ${savedResult.universities.map(university => university.name).join(", ") || "No specific matches"}. Only backend-verified official course pages are linked below.`,
+            text: `I’ve added your course and institution results to our conversation, ${currentUser}. Course: ${savedResult.course || "Course options"}. Institutions: ${savedResult.universities.map(university => university.name).join(", ") || "No verified matches"}. ${savedResult.institutionMatchMessage || "Only backend-verified official course pages are linked below."}`,
             result: savedResult
         });
         careerChatState.step = 0;
@@ -3634,6 +3639,16 @@ if (!data.alternative_careers || data.alternative_careers.length === 0) {
             </div>
             ${uniHtml}
         `;
+        if (
+            (!Array.isArray(data.universities) || data.universities.length === 0)
+            && typeof data.institution_match_message === "string"
+            && data.institution_match_message.trim()
+        ) {
+            const notice = document.createElement('p');
+            notice.className = "small text-secondary mt-3";
+            notice.textContent = data.institution_match_message;
+            document.getElementById('modalContent').appendChild(notice);
+        }
         
         modal.show();
     }
@@ -3781,6 +3796,18 @@ if (!data.alternative_careers || data.alternative_careers.length === 0) {
                 columnStyles: { 0: { cellWidth: 40 }, 2: { cellWidth: 40 } }, 
                 styles: { fontSize: 8, cellPadding: 3 } 
             });
+        } else if (
+            typeof data.institution_match_message === "string"
+            && data.institution_match_message.trim()
+        ) {
+            const matchNote = doc.splitTextToSize(data.institution_match_message, 182);
+            const noteHeight = matchNote.length * 4;
+            if (currentY + noteHeight > 270) { doc.addPage(); currentY = 20; }
+            doc.setFontSize(10);
+            doc.setTextColor(60, 60, 60);
+            doc.setFont("helvetica", "normal");
+            doc.text(matchNote, 14, currentY);
+            currentY += 8 + noteHeight;
         }
 
         // --- ALTERNATIVE CAREERS TABLE ---

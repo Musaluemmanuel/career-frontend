@@ -74,6 +74,23 @@ confirm service-worker updates. For image analysis, use a small supported
 sample and a backend configured with Gemini. Backend tests and API setup are
 documented in the [backend repository](https://github.com/aicareerrecommender-alt/career-backend).
 
+### Latest verified checks
+
+On 2026-11-07, the changes in this repository were checked as follows:
+
+| Check | Result |
+| --- | --- |
+| Parse the page's inline JavaScript with Node.js `new Function(...)` | Passed: 1 inline script parsed. |
+| `node --check auth-bridge.js` | Passed. |
+| Browser-render the recommendation card with no verified institution results | Passed: the explicit “no official course page verified” message was shown. |
+| `git diff --check` | Passed for the frontend and backend working trees. |
+
+An unauthenticated request to the production `/recommend` endpoint returned
+the expected HTTP 401 `authentication_required`. This confirms the auth gate,
+not a completed recommendation; no authenticated end-to-end production
+recommendation was run. See the backend repository's `docs/TESTING.md` for
+backend results and the live course-page lookup outcome.
+
 ## Documentation
 
 - [Student User Guide](USER_GUIDE.md)
