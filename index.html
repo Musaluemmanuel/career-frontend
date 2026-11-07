@@ -1688,8 +1688,12 @@ window.onload = async () => {
             try {
                 const storage = window[storageName];
                 const saved = JSON.parse(storage.getItem(key) || "null");
-                if (saved && typeof saved.personalization === "boolean") {
-                    return { personalization: saved.personalization };
+                if (
+                    saved
+                    && typeof saved.personalization === "boolean"
+                    && typeof saved.improvement === "boolean"
+                ) {
+                    return { personalization: saved.personalization, improvement: saved.improvement };
                 }
             } catch (error) {
                 console.warn('Could not read saved data choices from browser storage.', error);
@@ -1698,9 +1702,9 @@ window.onload = async () => {
         return null;
     }
 
-    function saveDeviceDataConsent(personalization) {
+    function saveDeviceDataConsent(personalization, improvement = false) {
         const key = `${currentUser}_data_consent`;
-        const value = JSON.stringify({ personalization });
+        const value = JSON.stringify({ personalization, improvement });
         let saved = false;
         for (const storageName of ["localStorage", "sessionStorage"]) {
             try {
@@ -1757,7 +1761,7 @@ window.onload = async () => {
                         improvement: result.improvement === true,
                         recorded: true
                     };
-                    saveDeviceDataConsent(dataConsent.personalization);
+                    saveDeviceDataConsent(dataConsent.personalization, dataConsent.improvement);
                     setDataConsentFields(dataConsent);
                     updateCareerChatPrivacyLabel();
                     return;
@@ -1771,7 +1775,7 @@ window.onload = async () => {
         if (deviceConsent) {
             dataConsent = {
                 personalization: deviceConsent.personalization,
-                improvement: false,
+                improvement: deviceConsent.improvement,
                 recorded: false
             };
             setDataConsentFields(dataConsent);
@@ -1825,15 +1829,15 @@ window.onload = async () => {
                     improvement: result.improvement === true,
                     recorded: true
                 };
-                saveDeviceDataConsent(dataConsent.personalization);
+                saveDeviceDataConsent(dataConsent.personalization, dataConsent.improvement);
             } else {
-                if (!saveDeviceDataConsent(next.personalization)) {
+                if (!saveDeviceDataConsent(next.personalization, next.improvement)) {
                     showDataConsentStatus('Your choices could not be saved in this browser. You can continue with optional use off; no sign-in is required.');
                     return false;
                 }
                 dataConsent = {
                     personalization: next.personalization,
-                    improvement: false,
+                    improvement: next.improvement,
                     recorded: false
                 };
             }
@@ -1848,10 +1852,10 @@ window.onload = async () => {
             return true;
         } catch (error) {
             console.warn('Could not save account data choices; trying a device-only choice.', error);
-            if (saveDeviceDataConsent(next.personalization)) {
+            if (saveDeviceDataConsent(next.personalization, next.improvement)) {
                 dataConsent = {
                     personalization: next.personalization,
-                    improvement: false,
+                    improvement: next.improvement,
                     recorded: false
                 };
                 setDataConsentFields(dataConsent);
