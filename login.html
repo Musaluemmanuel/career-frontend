@@ -140,7 +140,18 @@
         }
 
         let isLoginMode = true;
-        let pendingVerificationEmail = ""; 
+        let pendingVerificationEmail = "";
+
+        function storeAccessToken(data) {
+            if (typeof data.access_token === "string" && data.access_token.trim()) {
+                sessionStorage.setItem('career_access_token', data.access_token);
+                sessionStorage.setItem('career_user_email', data.user?.email || data.email || "");
+                return true;
+            }
+            sessionStorage.removeItem('career_access_token');
+            sessionStorage.removeItem('career_user_email');
+            return false;
+        }
 
         // ==========================================
         // ✨ MAGIC LINK / AUTO-VERIFY LOGIC ✨
@@ -260,6 +271,12 @@
                 if (response.ok) {
                     if (isLoginMode) {
                         // LOGIN SUCCESS
+                        const hasAccessToken = storeAccessToken(data);
+                        if (!hasAccessToken) {
+                            msg.className = "text-danger small fw-bold mt-2";
+                            msg.innerText = "The server accepted the sign-in but did not issue a secure session token. Please try again.";
+                            return;
+                        }
                         msg.className = "text-success small fw-bold mt-2";
                         msg.innerText = "Success! Redirecting...";
                         localStorage.setItem('user_name', data.user.name); // Using verified name from backend
@@ -336,6 +353,7 @@
                     messageEl.textContent = "Account verified! Logging you in...";
                     
                     // --- AUTO-LOGIN TRIGGER ---
+                    storeAccessToken(data);
                     localStorage.setItem('user_name', data.user.name); 
                     localStorage.setItem('user_email', data.user.email);
                     localStorage.removeItem('pendingVerificationEmail'); // Clean up memory
@@ -449,7 +467,8 @@
                 const data = await res.json();
                 
                 if (res.ok) {
-                    // Save user data
+                    // Save user data and bearer session
+                    storeAccessToken(data);
                     localStorage.setItem('user_name', data.name);
                     localStorage.setItem('user_email', data.email);
                     window.location.href = "index.html"; 

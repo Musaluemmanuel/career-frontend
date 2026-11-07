@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>CareerPath AI | Smart Learning Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -1576,7 +1579,7 @@ window.onload = async () => {
         saveButton.disabled = true;
         showDataConsentStatus('');
         try {
-            if (!token) throw new Error('Sign in again before saving data choices.');
+            if (!token) throw new Error('Device-only saving is active.');
             const response = await fetch(`${API_URL}/data-consent`, {
                 method: 'POST',
                 headers: {
@@ -1868,28 +1871,49 @@ window.onload = async () => {
     function renderCareerChatHistory() {
         const select = document.getElementById('careerChatHistory');
         if (!select) return;
+        select.replaceChildren();
         if (!dataConsent.personalization) {
-            select.replaceChildren();
-            select.style.display = "none";
+            const placeholder = document.createElement('option');
+            placeholder.value = "";
+            placeholder.textContent = "Conversations are not saved";
+            placeholder.disabled = true;
+            select.appendChild(placeholder);
+            select.value = "";
+            select.disabled = true;
+            select.style.display = "block";
             return;
         }
+        select.disabled = false;
         const conversations = readSavedCareerChats();
-        if (careerChatState && !conversations.some(item => item.id === careerChatState.id)) {
+        if (careerChatState && careerChatState.messages.some(message => message.role === "user") && !conversations.some(item => item.id === careerChatState.id)) {
             conversations.unshift({
                 id: careerChatState.id,
                 title: getCareerChatTitle(careerChatState),
                 state: careerChatState
             });
         }
-        select.replaceChildren();
-        conversations.forEach(conversation => {
-            const option = document.createElement('option');
-            option.value = conversation.id;
-            option.textContent = conversation.title || "Saved conversation";
-            select.appendChild(option);
-        });
-        select.value = careerChatState?.id || "";
-        select.style.display = conversations.length ? "block" : "none";
+        if (!conversations.length) {
+            const placeholder = document.createElement('option');
+            placeholder.value = "";
+            placeholder.textContent = "No saved conversations yet";
+            select.appendChild(placeholder);
+            select.value = "";
+        } else {
+            if (!conversations.some(item => item.id === careerChatState?.id)) {
+                const placeholder = document.createElement('option');
+                placeholder.value = "";
+                placeholder.textContent = "Choose a previous chat";
+                select.appendChild(placeholder);
+            }
+            conversations.forEach(conversation => {
+                const option = document.createElement('option');
+                option.value = conversation.id;
+                option.textContent = conversation.title || "Saved conversation";
+                select.appendChild(option);
+            });
+            select.value = careerChatState?.id || "";
+        }
+        select.style.display = "block";
     }
 
     function downloadCareerChatReport(result, button = null) {
@@ -2496,13 +2520,8 @@ window.onload = async () => {
         document.getElementById('careerChatVoiceButton').disabled = true;
         document.getElementById('careerChatAttachButton').disabled = true;
         document.getElementById('careerChatVoiceStatus').textContent = "Thinking…";
-        const thinking = document.createElement('div');
-        thinking.className = "career-chat-message assistant";
-        thinking.textContent = "Let me think about that…";
-        thinking.setAttribute('aria-label', "CareerPath AI is responding");
-        const messageLog = document.getElementById('careerChatMessages');
-        document.getElementById('careerChatMessageList').appendChild(thinking);
-        messageLog.scrollTop = messageLog.scrollHeight;
+        document.getElementById('careerChatSendButton').classList.add('is-thinking');
+        document.getElementById('careerChatMessages').scrollTop = document.getElementById('careerChatMessages').scrollHeight;
 
         let failureMessage = "";
         try {
