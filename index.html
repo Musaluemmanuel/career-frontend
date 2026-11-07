@@ -377,7 +377,7 @@
             }
 
             body.career-chat-active #main-app {
-                height: 100dvh;
+                height: var(--career-chat-viewport-height, 100dvh);
                 overflow: hidden;
             }
 
@@ -385,7 +385,7 @@
                 display: flex !important;
                 flex-direction: column;
                 width: 100%;
-                height: 100dvh;
+                height: var(--career-chat-viewport-height, 100dvh);
                 min-height: 0;
                 overflow: hidden;
                 padding: 12px !important;
@@ -422,6 +422,9 @@
             body.career-chat-active .career-chat-messages {
                 min-height: 0;
                 overscroll-behavior: contain;
+                overscroll-behavior-y: contain;
+                -webkit-overflow-scrolling: touch;
+                touch-action: pan-y;
             }
 
             #main-app > #main-sidebar {
@@ -1032,7 +1035,7 @@
     <script src="/auth-bridge.js" defer></script>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1d4ed8">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192x192.png">
 </head>
 <body>
    
@@ -1473,6 +1476,21 @@
     let dataConsent = { personalization: false, improvement: false, recorded: false };
     let initialConsentResolver = null;
     let pendingConsentNotice = "";
+
+    function updateCareerChatViewportHeight() {
+        if (!window.matchMedia("(max-width: 768px)").matches) {
+            document.documentElement.style.removeProperty("--career-chat-viewport-height");
+            return;
+        }
+        const viewportHeight = window.visualViewport?.height || window.innerHeight;
+        document.documentElement.style.setProperty(
+            "--career-chat-viewport-height",
+            `${Math.round(viewportHeight)}px`
+        );
+    }
+
+    window.addEventListener("resize", updateCareerChatViewportHeight);
+    window.visualViewport?.addEventListener("resize", updateCareerChatViewportHeight);
     
     const careerGradeSubjects = [
         { key: "Math", label: "Maths" },
@@ -1502,6 +1520,7 @@
     };
     
 window.onload = async () => {
+        updateCareerChatViewportHeight();
         // 1. Check if they are logged in
         const savedUser = localStorage.getItem('user_name');
         if (!savedUser) { 
@@ -1550,28 +1569,34 @@ window.onload = async () => {
     }
 
     function readDeviceDataConsent() {
-        try {
-            const saved = JSON.parse(localStorage.getItem(`${currentUser}_data_consent`) || "null");
-            return saved && typeof saved.personalization === "boolean"
-                ? { personalization: saved.personalization }
-                : null;
-        } catch (error) {
-            console.error('Could not read device data choices.', error);
-            return null;
+        const key = `${currentUser}_data_consent`;
+        for (const storageName of ["localStorage", "sessionStorage"]) {
+            try {
+                const storage = window[storageName];
+                const saved = JSON.parse(storage.getItem(key) || "null");
+                if (saved && typeof saved.personalization === "boolean") {
+                    return { personalization: saved.personalization };
+                }
+            } catch (error) {
+                console.warn('Could not read saved data choices from browser storage.', error);
+            }
         }
+        return null;
     }
 
     function saveDeviceDataConsent(personalization) {
-        try {
-            localStorage.setItem(
-                `${currentUser}_data_consent`,
-                JSON.stringify({ personalization })
-            );
-            return true;
-        } catch (error) {
-            console.error('Could not save device data choices.', error);
-            return false;
+        const key = `${currentUser}_data_consent`;
+        const value = JSON.stringify({ personalization });
+        let saved = false;
+        for (const storageName of ["localStorage", "sessionStorage"]) {
+            try {
+                window[storageName].setItem(key, value);
+                saved = true;
+            } catch (error) {
+                console.warn(`Could not save data choices to ${storageName}.`, error);
+            }
         }
+        return saved;
     }
 
     function finishInitialDataConsent() {
