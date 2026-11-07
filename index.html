@@ -562,6 +562,16 @@
             border-radius: 4px;
             background: rgba(0, 0, 0, 0.06);
         }
+        .career-chat-message.assistant a {
+            color: #0b5ed7;
+            font-weight: 600;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+            overflow-wrap: anywhere;
+        }
+        .career-chat-message.assistant a:hover {
+            color: #084298;
+        }
 
         .career-chat-message.user {
             align-self: flex-end;
@@ -2002,11 +2012,26 @@ window.onload = async () => {
 
     function formatCareerChatInline(value) {
         let formatted = escapeCareerChatHtml(value);
+        const links = [];
+        formatted = formatted.replace(/\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)/gi, (match, label, url) => {
+            const placeholder = `\uE000LINK${links.length}\uE001`;
+            links.push(`<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`);
+            return placeholder;
+        });
         formatted = formatted.replace(/`([^`]+)`/g, "<code>$1</code>");
         formatted = formatted.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
         formatted = formatted.replace(/__([^_]+)__/g, "<strong>$1</strong>");
         formatted = formatted.replace(/(^|[^*])\*([^*]+)\*/g, "$1<em>$2</em>");
         formatted = formatted.replace(/(^|[^_])_([^_]+)_/g, "$1<em>$2</em>");
+        formatted = formatted.replace(/(^|[^\w])((?:https?:\/\/|www\.)[^\s<]+)/gi, (match, prefix, url) => {
+            const cleanUrl = url.replace(/[),.!?;:]+$/g, "");
+            const suffix = url.slice(cleanUrl.length);
+            const href = cleanUrl.startsWith("www.") ? `https://${cleanUrl}` : cleanUrl;
+            return `${prefix}<a href="${href}" target="_blank" rel="noopener noreferrer">${cleanUrl}</a>${suffix}`;
+        });
+        links.forEach((anchor, index) => {
+            formatted = formatted.replace(`\uE000LINK${index}\uE001`, anchor);
+        });
         return formatted;
     }
 
