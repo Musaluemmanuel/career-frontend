@@ -1639,9 +1639,13 @@ window.onload = async () => {
         updateCareerChatViewportHeight();
         // 1. Check if they are logged in
         const savedUser = localStorage.getItem('user_name');
-        if (!savedUser) { 
-            window.location.href = "login.html"; 
-            return; // Stops here if they aren't logged in
+        const accessToken = sessionStorage.getItem('career_access_token');
+        if (!savedUser || !accessToken) {
+            localStorage.removeItem('user_name');
+            sessionStorage.removeItem('career_access_token');
+            sessionStorage.removeItem('career_user_email');
+            window.location.replace("login.html");
+            return;
         }
         
         // 2. REVEAL THE DASHBOARD AND SIDEBAR HERE!
