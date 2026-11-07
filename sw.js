@@ -1,5 +1,5 @@
 /* Inject shared auth and responsive assets into the static HTML pages. */
-const CACHE_NAME = 'career-v10-careerpath-brand';
+const CACHE_NAME = 'career-v11-careerpath-brand';
 const AUTH_BRIDGE = '/auth-bridge.js';
 const RESPONSIVE_CSS = '/responsive.css';
 const ASSETS = [
