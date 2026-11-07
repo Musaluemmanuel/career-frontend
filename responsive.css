@@ -1,0 +1,205 @@
+/* Shared responsive refinements for the static CareerPath pages. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  max-width: 100%;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+img,
+canvas,
+video,
+iframe {
+  max-width: 100%;
+}
+
+input,
+select,
+textarea,
+button {
+  max-width: 100%;
+}
+
+@media (max-width: 768px) {
+  /* The dashboard sidebar has its own slide-in behavior in index.html. */
+  body:has(#dashboard-content) {
+    min-height: 100vh;
+  }
+
+  #dashboard-content,
+  .main-content {
+    min-width: 0;
+    padding: 16px !important;
+  }
+
+  /* Keep the saved-reports sidebar in a left-side mobile drawer. */
+  body:has(.main-content #inboxList) .sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    right: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: min(280px, calc(100vw - 56px)) !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+    z-index: 1050 !important;
+    transform: translateX(-100%);
+  }
+
+  body:has(.main-content #inboxList) .sidebar.show-mobile {
+    transform: translateX(0);
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.2);
+  }
+
+  body:has(.main-content #inboxList) .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1040;
+    background: rgba(15, 23, 42, 0.45);
+  }
+
+  body:has(.main-content #inboxList) .sidebar-overlay.show {
+    display: block;
+  }
+
+  body:has(.main-content #inboxList) .reports-menu-toggle {
+    display: inline-flex !important;
+    flex: 0 0 auto;
+  }
+
+  body:has(.main-content #inboxList) .reports-heading-group {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  body:has(.main-content #inboxList) .reports-heading-group > div {
+    min-width: 0;
+  }
+
+  body:has(.main-content #inboxList) .main-content {
+    width: 100%;
+    margin: 0 !important;
+    padding: 20px !important;
+  }
+
+  body.reports-sidebar-open {
+    overflow: hidden;
+  }
+
+  /* Keep report rows usable at phone widths. */
+  .inbox-row {
+    gap: 8px;
+    padding: 13px 12px !important;
+  }
+
+  .course-col {
+    min-width: 0;
+    padding-right: 0 !important;
+  }
+
+  .course-title,
+  .course-subtitle {
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+  }
+
+  /* Prevent wide recommendation/report content from forcing horizontal scroll. */
+  #resultsList > *,
+  #altCoursesList > *,
+  #summarySubjectsList > * {
+    min-width: 0;
+  }
+
+  .modal-dialog {
+    width: calc(100% - 20px);
+    max-width: 500px;
+    margin: 10px auto;
+  }
+
+  .modal-content {
+    max-height: calc(100dvh - 20px);
+    overflow-y: auto;
+  }
+
+  .table-responsive,
+  .inbox-container {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .input-group > .form-control {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .status-card-val {
+    font-size: clamp(2.1rem, 11vw, 3rem) !important;
+  }
+
+  #profileFormContainer .card,
+  #profileSummaryContainer .card {
+    padding: 16px !important;
+  }
+
+  #runAuditBtn,
+  #saveProfileBtn,
+  #emailReportBtn,
+  #savePdfBtn {
+    width: 100%;
+  }
+
+  #audit > .d-flex,
+  #reports > .d-flex {
+    align-items: flex-start !important;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .inbox-header {
+    padding: 12px !important;
+  }
+
+  .star-col {
+    width: 24px !important;
+    flex: 0 0 24px;
+  }
+
+  body:has(.auth-card) {
+    min-height: 100vh;
+    min-height: 100dvh;
+    height: auto !important;
+    padding: 16px;
+    align-items: flex-start !important;
+  }
+
+  .auth-card {
+    max-width: 100% !important;
+    padding: 24px 18px !important;
+    margin: auto 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1e293b">
+  <title>CareerPath AI — Guided Demo</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root { color-scheme: light; }
+    body { min-height:100vh; background:linear-gradient(135deg,#eef2ff,#f8fafc 55%,#ecfeff); font-family:Inter,system-ui,sans-serif; color:#172033; }
+    .demo-shell { max-width:900px; margin:0 auto; padding:clamp(20px,5vw,56px) 18px; }
+    .demo-card { background:#fff; border:1px solid #e2e8f0; border-radius:24px; box-shadow:0 24px 70px #1e293b18; overflow:hidden; }
+    .demo-top { background:#1e293b; color:#fff; padding:22px 28px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .step-content { min-height:260px; padding:clamp(24px,6vw,52px); }
+    .step-icon { width:60px;height:60px;border-radius:18px;display:grid;place-items:center;background:#eef2ff;color:#4f46e5;font-size:1.5rem; }
+    .progress { height:8px; background:#e2e8f0; }
+    .progress-bar { background:linear-gradient(90deg,#4f46e5,#06b6d4); }
+    .demo-footer { border-top:1px solid #e2e8f0; padding:18px 24px; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .demo-links a { text-decoration:none; }
+    @media(max-width:540px){.demo-footer{flex-wrap:wrap}.demo-top{align-items:flex-start;flex-direction:column}}
+  </style>
+</head>
+<body>
+  <main class="demo-shell">
+    <div class="d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
+      <a class="text-decoration-none fw-bold text-dark" href="index.html"><i class="fa-solid fa-brain text-primary me-2"></i>CareerPath AI</a>
+      <a class="btn btn-outline-secondary btn-sm" href="login.html"><i class="fa-solid fa-arrow-right-to-bracket me-1"></i>Sign in</a>
+    </div>
+    <section class="demo-card" aria-label="Guided product demo">
+      <header class="demo-top">
+        <div><div class="text-info small fw-semibold text-uppercase">Interactive walkthrough</div><h1 class="h4 mb-0 mt-1">Your guide to CareerPath AI</h1></div>
+        <span class="badge rounded-pill text-bg-light" id="stepCount">Step 1 of 5</span>
+      </header>
+      <div class="px-4 pt-4"><div class="progress" role="progressbar" aria-label="Walkthrough progress"><div class="progress-bar" id="progressBar" style="width:20%"></div></div></div>
+      <div class="step-content" id="stepContent" aria-live="polite"></div>
+      <footer class="demo-footer">
+        <button class="btn btn-outline-secondary" id="backButton" type="button"><i class="fa-solid fa-arrow-left me-2"></i>Back</button>
+        <div class="d-flex gap-2 ms-auto">
+          <button class="btn btn-light" id="skipButton" type="button">Skip tour</button>
+          <button class="btn btn-primary px-4" id="nextButton" type="button">Next <i class="fa-solid fa-arrow-right ms-2"></i></button>
+        </div>
+      </footer>
+    </section>
+    <div class="demo-links text-center mt-4 small text-secondary">
+      <span>Jump to a destination:</span>
+      <a class="mx-2" href="login.html">Sign in</a>·
+      <a class="mx-2" href="index.html">Dashboard</a>·
+      <a class="mx-2" href="reports.html">Saved reports</a>
+    </div>
+    <p class="small text-center text-secondary mt-4 mb-0">Demo mode explains the journey; it does not submit grades, create an account, or call the AI.</p>
+    <p class="small text-center text-secondary mt-2 mb-0">On your first dashboard visit, review the optional privacy choices. You can change them later from <strong>Privacy &amp; Data</strong> in the sidebar. Declining optional use does not prevent recommendations.</p>
+  </main>
+<script>
+  const steps = [
+    { icon:'fa-user-shield', eyebrow:'Start here', title:'Sign in or create your account', body:'Use your registered email and password, or continue with Google. New accounts need email verification before signing in. Your account lets CareerPath AI associate recommendation history with you.', action:'Open sign-in', href:'login.html' },
+    { icon:'fa-pen-to-square', eyebrow:'Build your profile', title:'Tell us what you enjoy', body:'On Profile Setup, describe a career or interests in your own words. Be specific—mention subjects, activities, or the kind of work you find meaningful.', action:'Go to dashboard', href:'index.html' },
+    { icon:'fa-graduation-cap', eyebrow:'Add grades', title:'Choose seven subjects and grades', body:'Select exactly seven subjects and enter the grades you earned. The dashboard calculates aggregate points and mean grade. Review the profile summary before starting the analysis.', action:'Open profile setup', href:'index.html' },
+    { icon:'fa-wand-magic-sparkles', eyebrow:'Get guidance', title:'Run your intelligence audit', body:'Start the audit to receive a suggested course and career direction, an action plan, and institution pathways. Recommendations are AI-generated guidance—confirm admission requirements and course availability with the institution or KUCCPS.', action:'Open dashboard', href:'index.html' },
+    { icon:'fa-box-archive', eyebrow:'Keep exploring', title:'Review, save, and revisit reports', body:'Use the report area to review previous recommendations. Saved results can help you compare options; update your interests or grades and run a new analysis when your plans change.', action:'View saved reports', href:'reports.html' }
+  ];
+  let current = 0;
+  const content = document.getElementById('stepContent');
+  const back = document.getElementById('backButton');
+  const next = document.getElementById('nextButton');
+  function render() {
+    const step = steps[current];
+    document.getElementById('stepCount').textContent = `Step ${current + 1} of ${steps.length}`;
+    document.getElementById('progressBar').style.width = `${((current + 1) / steps.length) * 100}%`;
+    content.innerHTML = `<div class="step-icon mb-4"><i class="fa-solid ${step.icon}" aria-hidden="true"></i></div><div class="small text-primary text-uppercase fw-bold mb-2">${step.eyebrow}</div><h2 class="h3 fw-bold mb-3">${step.title}</h2><p class="text-secondary fs-5 mb-4">${step.body}</p><a class="btn btn-outline-primary" href="${step.href}">${step.action}<i class="fa-solid fa-arrow-up-right-from-square ms-2"></i></a>`;
+    back.disabled = current === 0;
+    next.innerHTML = current === steps.length - 1 ? 'Finish <i class="fa-solid fa-check ms-2"></i>' : 'Next <i class="fa-solid fa-arrow-right ms-2"></i>';
+  }
+  back.addEventListener('click', () => { if (current > 0) current--; render(); });
+  next.addEventListener('click', () => { if (current < steps.length - 1) { current++; render(); } else { window.location.href = 'index.html'; } });
+  document.getElementById('skipButton').addEventListener('click', () => { window.location.href = 'index.html'; });
+  render();
+</script>
+</body>
+</html>
