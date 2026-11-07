@@ -532,7 +532,7 @@
         }
 
         .career-chat-card.is-empty .career-chat-messages {
-            justify-content: center;
+            justify-content: flex-start;
         }
 
         .career-chat-card.is-empty .career-chat-message.assistant {
@@ -2392,7 +2392,7 @@ window.onload = async () => {
                         input.value = studentRequest;
                         careerChatState.draft = studentRequest;
                         saveCareerChat();
-                        input.focus();
+                        submitCareerChatAnswer();
                     });
                     suggestionList.appendChild(button);
                 });
@@ -2566,9 +2566,16 @@ window.onload = async () => {
         });
     }
 
-    function showCareerChatNotice(message) {
+    function showCareerChatNotice(message, showSignIn = false) {
         const notice = document.getElementById('careerChatNotice');
-        notice.textContent = message;
+        notice.replaceChildren(document.createTextNode(message));
+        if (showSignIn) {
+            const signInLink = document.createElement('a');
+            signInLink.href = "login.html";
+            signInLink.className = "alert-link ms-2";
+            signInLink.textContent = "Sign in";
+            notice.appendChild(signInLink);
+        }
         notice.style.display = "block";
     }
 
@@ -3610,6 +3617,7 @@ window.onload = async () => {
 
         let chatTypingIndicator = null;
         let chatFailureMessage = "";
+        let chatRequiresSignIn = false;
         if (presentInChat) {
             careerChatRecommendationPending = true;
             renderCareerChat();
@@ -3639,18 +3647,27 @@ try {
             console.group("🚀 Recommendation Process Trace");
             console.log("%cStep 1: Sending course interests and available grades...", "color: #3498db; font-weight: bold;");
             
-            // NOTE: Change API_URL to BACKEND_URL if that's what your code uses
+            const accessToken = sessionStorage.getItem('career_access_token');
+            if (!accessToken) {
+                chatRequiresSignIn = true;
+                throw new Error('Your secure session is missing. Please sign in again before requesting course options.');
+            }
+
             const response = await fetch(`${API_URL}/recommend`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(userData) // NOTE: use JSON.stringify(grades) if your code uses 'grades' instead of 'userData'
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify(userData)
             });
 
             const data = await response.json().catch(() => ({}));
             if (!response.ok) {
                 console.error(`❌ FAILURE AT STEP 2: Server responded with ${response.status}`);
                 if (response.status === 401) {
-                    throw new Error(data.error || 'The recommendation service could not verify this session. Your dashboard remains open; you do not need to sign in again.');
+                    chatRequiresSignIn = true;
+                    throw new Error(data.error || 'The recommendation service could not verify this session. Please sign in to continue; your chat is still here.');
                 }
                 if (response.status === 404) {
                     throw new Error('The recommendation service is not available on the server yet. Your dashboard remains open.');
@@ -3731,7 +3748,7 @@ if (!data.alternative_careers || data.alternative_careers.length === 0) {
                 careerChatRecommendationPending = false;
                 chatTypingIndicator?.remove();
                 renderCareerChat();
-                if (chatFailureMessage) showCareerChatNotice(chatFailureMessage);
+                if (chatFailureMessage) showCareerChatNotice(chatFailureMessage, chatRequiresSignIn);
             }
         }
     }
