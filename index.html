@@ -572,6 +572,24 @@
         .career-chat-message.assistant a:hover {
             color: #084298;
         }
+        .career-chat-message.assistant figure.career-chat-image {
+            margin: 0.5rem 0 0.75rem;
+            max-width: 560px;
+        }
+        .career-chat-message.assistant .career-chat-image img {
+            display: block;
+            width: 100%;
+            max-height: 360px;
+            object-fit: contain;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            background: #fff;
+        }
+        .career-chat-message.assistant .career-chat-image figcaption {
+            margin-top: 0.35rem;
+            color: #5b6573;
+            font-size: 0.82rem;
+        }
 
         .career-chat-message.user {
             align-self: flex-end;
@@ -2012,7 +2030,13 @@ window.onload = async () => {
 
     function formatCareerChatInline(value) {
         let formatted = escapeCareerChatHtml(value);
+        const images = [];
         const links = [];
+        formatted = formatted.replace(/!\[([^\]\n]*)\]\((https?:\/\/[^\s)]+)\)/gi, (match, alt, url) => {
+            const placeholder = `\uE002IMAGE${images.length}\uE003`;
+            images.push(`<figure class="career-chat-image"><img src="${url}" alt="${alt}" loading="lazy" referrerpolicy="no-referrer"><figcaption>${alt}</figcaption></figure>`);
+            return placeholder;
+        });
         formatted = formatted.replace(/\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)/gi, (match, label, url) => {
             const placeholder = `\uE000LINK${links.length}\uE001`;
             links.push(`<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`);
@@ -2028,6 +2052,9 @@ window.onload = async () => {
             const suffix = url.slice(cleanUrl.length);
             const href = cleanUrl.startsWith("www.") ? `https://${cleanUrl}` : cleanUrl;
             return `${prefix}<a href="${href}" target="_blank" rel="noopener noreferrer">${cleanUrl}</a>${suffix}`;
+        });
+        images.forEach((figure, index) => {
+            formatted = formatted.replace(`\uE002IMAGE${index}\uE003`, figure);
         });
         links.forEach((anchor, index) => {
             formatted = formatted.replace(`\uE000LINK${index}\uE001`, anchor);
@@ -2062,6 +2089,7 @@ window.onload = async () => {
                 return;
             }
 
+            const image = trimmed.match(/^!\[([^\]\n]*)\]\((https?:\/\/[^\s)]+)\)$/i);
             const heading = trimmed.match(/^#{1,4}\s+(.+)$/);
             const bullet = trimmed.match(/^[-*+]\s+(.+)$/);
             const numbered = trimmed.match(/^\d+[.)]\s+(.+)$/);
