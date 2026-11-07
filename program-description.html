@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CareerPath AI — AI Career and Education Guidance</title>
+  <meta name="description" content="CareerPath AI helps Kenyan students explore interests, understand courses, analyse educational documents, and receive personalised career guidance.">
+  <style>
+    :root { color-scheme: light; font-family: Inter, system-ui, sans-serif; color: #172033; background: #f5f9ff; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; }
+    main { width: min(760px, calc(100% - 32px)); box-sizing: border-box; margin: 32px 0; padding: 36px; border-radius: 24px; background: white; box-shadow: 0 18px 50px rgba(35, 87, 146, .14); }
+    h1 { margin-top: 0; color: #123b72; font-size: clamp(2rem, 7vw, 3.5rem); line-height: 1.05; }
+    h2 { color: #155d9b; }
+    p, li { line-height: 1.65; }
+    a { color: #0b63ce; font-weight: 700; }
+    .address { padding: 12px 14px; border-radius: 10px; background: #edf5ff; overflow-wrap: anywhere; }
+    .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
+    .actions a { padding: 11px 16px; border-radius: 999px; text-decoration: none; }
+    .primary { color: white !important; background: linear-gradient(135deg, #0b5ed7, #17a673); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>CareerPath AI</h1>
+    <p><strong>An intelligent career companion for Kenyan students.</strong> CareerPath AI combines conversational guidance, course discovery, grade-aware recommendations, document analysis, and saved reports to help learners make clearer decisions about education and career pathways.</p>
+
+    <h2>How it helps</h2>
+    <ul>
+      <li>Explores interests through friendly, scenario-based conversations.</li>
+      <li>Explains courses, institutions, admission requirements, and study options.</li>
+      <li>Provides personalised recommendations when grades or preferences are available.</li>
+      <li>Reads supported documents, images, and videos to assist explanations.</li>
+      <li>Saves conversations and produces useful reports without losing the student's context.</li>
+    </ul>
+
+    <h2>Frontend address</h2>
+    <p class="address" id="frontendAddress" aria-live="polite">Loading the live frontend address…</p>
+
+    <div class="actions">
+      <a class="primary" href="index.html">Open CareerPath AI</a>
+      <a href="USER_GUIDE.md">Read the guide</a>
+    </div>
+  </main>
+  <script>
+    const address = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/');
+    const link = document.getElementById('frontendAddress');
+    link.textContent = address;
+    link.setAttribute('data-live-address', address);
+  </script>
+</body>
+</html>
