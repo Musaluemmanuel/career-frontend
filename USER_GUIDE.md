@@ -49,11 +49,14 @@ Reports** provides access to saved reports.
 ## 4. Attach a file to chat
 
 Use the attachment button to add reference material to a message. Supported
-formats are PDF, JPEG, PNG, WebP, MP4, MOV, and WebM. You can attach up to
-three files at a time; each file must be 5 MB or smaller.
+formats are PDF, JPEG, PNG, WebP, MP4, MOV, and WebM. For example, attach a
+photo of a grade sheet and ask the assistant to read it or discuss relevant
+study options. You can attach up to three files at a time; each file must be
+5 MB or smaller.
 
 Only attach material you are comfortable sharing with the service. Check
-important details extracted from a file and correct them if needed.
+important details extracted from a file and correct them if needed. Image and
+document analysis requires the service's Gemini integration to be configured.
 
 ## 5. Find previous conversations
 
