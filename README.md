@@ -1,123 +1,98 @@
-# CareerPath AI
+# CareerPath AI Frontend
 
-CareerPath AI is a student-focused career and education guidance app. Students can
-explore interests, ask questions about courses and study options, and request
-recommendations with or without sharing grades.
-
-The app is split into two independently versioned projects:
-
-- `frntend/` - static web interface, served from `index.html`.
-- `backend/` - Django API for accounts, chat, recommendations, and reports.
+CareerPath AI is a student-focused career and education guidance application.
+This repository contains the static browser frontend; the independently
+maintained Django API is in
+[aicareerrecommender-alt/career-backend](https://github.com/aicareerrecommender-alt/career-backend).
 
 ## Features
 
-- Account registration, email verification, sign-in, and Google sign-in.
-- Conversational career exploration and optional interest discovery.
-- Course and institution recommendations with optional grades and study-level
-  preferences.
-- Optional PDF, image, and video attachments in chat.
-- Saved conversations in the browser and generated reports.
-- Responsive interface with a blue-and-green accent theme.
+- Account registration, email verification, password sign-in, and Google sign-in.
+- Career exploration chat and personalized course recommendations.
+- Optional PDF, image, and video chat attachments.
+- Browser-saved previous chats and generated reports.
+- Responsive layout with a blue-green theme.
 
-See the [User Guide](USER_GUIDE.md) for instructions on using the app.
+See the [User Guide](USER_GUIDE.md) for student instructions and
+[Authentication](AUTHENTICATION.md) for frontend/backend token integration.
 
 ## Run locally
 
-### Backend
-
-Use Python 3.10 or later. From the frontend project directory, move into
-`backend/`:
-
-```powershell
-cd ..\backend
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-```
-
-Create a `.env` file in `backend/` and add the credentials for the services you
-intend to use:
-
-```dotenv
-GROQ_API_KEY=your_groq_api_key
-GEMINI_API_KEY=your_gemini_api_key
-MAIL_USERNAME=your_email_address
-MAIL_PASSWORD=your_email_app_password
-# Optional; defaults to a local SQLite database.
-DATABASE_URL=sqlite:///local_test.db
-```
-
-The Groq key enables text chat and recommendations. The Gemini key enables
-attachment analysis. Mail credentials are needed for email verification and
-other email features. Keep `.env` private and never commit real credentials.
-
-Apply database migrations and start the Django API:
-
-```powershell
-python manage.py migrate
-python manage.py runserver 0.0.0.0:5001
-```
-
-The development server listens on port `5001`. `DATABASE_URL` can be set to a
-PostgreSQL connection string; SQLite is used by default. On an existing
-deployment, the startup command uses Django's `--fake-initial` option to adopt
-the existing `user` and `student_log` tables without recreating them.
-
-Set `DJANGO_SECRET_KEY` to a private, randomly generated value in production.
-The backend runs Django through Gunicorn using `careerpath.wsgi:application`.
-
-### Frontend
-
-In a second terminal, from the frontend directory:
+This is a static site; it does not require a frontend package installation or
+build step. With Python installed, run a local static server from this
+directory:
 
 ```powershell
 python -m http.server 8765
 ```
 
-Open <http://127.0.0.1:8765/> in a browser. The frontend currently has its API
-base URL set in `index.html`, `login.html`, and `reports.html` to the hosted
-CareerPath AI service. To use a local backend instead, update each `API_URL` to
-`http://127.0.0.1:5001`.
+Open <http://127.0.0.1:8765/>. A local web server is required for the service
+worker; opening `index.html` directly as a `file://` URL will not exercise all
+app features.
+
+The pages currently use the configured hosted API. To develop against a local
+backend, start the Django API on port `5001` and update the `API_URL`
+constants in `index.html`, `login.html`, and `reports.html` to
+`http://127.0.0.1:5001`. Also update the two `/send-report` fetch URLs in
+`index.html`; they are written as absolute URLs. Revert those local-only URL
+changes before preparing a deployment.
 
 The frontend loads Bootstrap, Font Awesome, Google Fonts, and other browser
-libraries from external CDNs, so those resources require an internet connection.
+libraries from CDNs, so those resources require an internet connection.
 
-## Tests
+## Configuration and deployment
 
-The backend tests use Python's built-in `unittest` runner. From the backend
-directory:
+The static pages contain the API base URL in their source. Keep it pointed at
+the intended HTTPS API for each release. Never put provider API keys,
+database credentials, signing secrets, or private access tokens in frontend
+files; browser code and browser storage are visible to the user.
+
+`vercel.json` contains the hosting response-header configuration. Deploy this
+repository as a static site using the hosting provider's supported Git
+integration or CLI. Verify the dashboard, login, reports, service-worker
+assets, and API connectivity in a staging environment before promoting a
+release. Do not infer backend deploy status from a successful static-site
+deployment.
+
+The service worker (`sw.js`) caches the app shell and injects the auth bridge
+and responsive stylesheet into navigations. When changing the cached asset
+set, update `CACHE_NAME` and verify install/activation plus a hard refresh in a
+browser with an existing service-worker cache.
+
+## Validation
+
+There is no frontend package manifest or automated browser-test suite in this
+repository. Check JavaScript syntax with Node.js:
 
 ```powershell
-python manage.py test
-python -m unittest discover -s tests -v
+Get-ChildItem -Filter *.js -Recurse | ForEach-Object { node --check $_.FullName }
 ```
 
-The Django tests cover API requests, account flows, image upload validation,
-and CORS. The `unittest` suite covers AI chat and recommendation behavior,
-optional grades, and course catalogue discovery and verification.
+Then perform a manual smoke test in a browser: load the dashboard, sign in,
+send a chat message, check a recommendation request, navigate to reports, and
+confirm service-worker updates. For image analysis, use a small supported
+sample and a backend configured with Gemini. Backend tests and API setup are
+documented in the [backend repository](https://github.com/aicareerrecommender-alt/career-backend).
 
-## Deployment notes
+## Documentation
 
-The frontend is static HTML and can be served by a static hosting provider. The
-backend must run as a separate Django service and be configured with the
-credentials for the features it provides. Configure production secrets in the
-hosting provider's environment settings, not in source files or committed
-configuration.
+- [Student User Guide](USER_GUIDE.md)
+- [Authentication Integration](AUTHENTICATION.md)
+- [Architecture Overview](docs/ARCHITECTURE.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security Policy](SECURITY.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Support](SUPPORT.md)
+- [Changelog](CHANGELOG.md)
 
-## Project layout
+## Privacy and licensing
 
-```text
-frntend/
-  index.html       Main dashboard and chat
-  login.html       Sign-in, registration, and verification
-  reports.html     Saved reports view
-  README.md        Project setup and developer notes
-  USER_GUIDE.md    Student-facing usage instructions
-../backend/
-  manage.py        Django management commands
-  careerpath/      Django settings and WSGI entry point
-  api/             Django models, routes, and tests
-  app.py           Previous Flask implementation, retained during migration
-  utils/           AI, database, and course discovery helpers
-  tests/           Backend unit tests
-```
+Previous-chat transcripts and saved profile values are stored in this browser
+and may not transfer to another device. Saved reports are also sent to the
+backend and associated with the account. Messages and attachments are sent to
+the configured backend for processing. Avoid sharing information you do not
+want processed by the service, and verify AI-generated admissions guidance
+with official sources.
+
+No license is declared in this repository. Contact the repository owner before
+redistributing or reusing its contents.

@@ -46,6 +46,12 @@ Use **Profile Setup** to provide information for recommendations. The
 **Intelligence Report** section presents generated guidance and **Saved
 Reports** provides access to saved reports.
 
+The recommendation service currently allows up to three recommendation
+requests per verified account. Requests that fail after being admitted may
+still use an attempt. When the allowance is exhausted, the app displays a
+funding-required message; this is not a payment or top-up flow. Check with the
+service administrator if you need help.
+
 ## 4. Attach a file to chat
 
 Use the attachment button to add reference material to a message. Supported
@@ -87,3 +93,7 @@ later or contact the service administrator.
   sources.
 - AI responses can be incomplete or out of date; use them as guidance, not as
   a guarantee of admission or a substitute for official advice.
+
+For service status or account support, see [Support](SUPPORT.md). For
+information about browser authentication tokens, see
+[Authentication Integration](AUTHENTICATION.md).
